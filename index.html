@@ -229,6 +229,31 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
+        .pizza-card-locked {
+            background: linear-gradient(135deg, #888 0%, #444 100%);
+            cursor: not-allowed;
+            opacity: 0.75;
+        }
+
+        .pizza-card-locked:hover {
+            transform: none;
+            border-color: transparent;
+            box-shadow: none;
+        }
+
+        .pizza-lock-badge {
+            font-size: 13px;
+            color: #ffd89b;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .pizza-unlock-req {
+            font-size: 11px;
+            color: #ddd;
+            margin-bottom: 5px;
+        }
+
         .pizza-emoji {
             font-size: 40px;
             margin-bottom: 10px;
@@ -1339,7 +1364,7 @@
                 topping_unlocked: { name: 'Topping Collector', desc: 'Unlock 5 premium toppings', reward: 150, unlocked: false },
             },
             pizzaStats: {
-                '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0
+                '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0
             },
             totalBonusesEarned: 0,
             timesUpgraded: 0,
@@ -1347,13 +1372,20 @@
         };
 
         const pizzas = {
-            '1': { name: 'Margherita', baseTime: 8, price: 12, difficulty: 1, emoji: '🍅' },
-            '2': { name: 'Pepperoni', baseTime: 10, price: 15, difficulty: 2, emoji: '🌶️' },
-            '3': { name: 'Vegetarian', baseTime: 9, price: 14, difficulty: 2, emoji: '🥒' },
-            '4': { name: 'Supreme', baseTime: 15, price: 25, difficulty: 3, emoji: '👑' },
-            '5': { name: 'BBQ Chicken', baseTime: 12, price: 20, difficulty: 3, emoji: '🍗' },
-            '6': { name: 'Hawaiian', baseTime: 11, price: 18, difficulty: 2, emoji: '🍍' },
-            '7': { name: 'Truffle', baseTime: 18, price: 50, difficulty: 4, emoji: '💎' },
+            // Storage Level 1 — starter recipes
+            '1': { name: 'Margherita',   baseTime: 8,  price: 12, difficulty: 1, emoji: '🍅', storageReq: 1 },
+            '2': { name: 'Pepperoni',    baseTime: 10, price: 15, difficulty: 2, emoji: '🌶️', storageReq: 1 },
+            // Storage Level 2 — basic expansion
+            '3': { name: 'Vegetarian',   baseTime: 9,  price: 14, difficulty: 2, emoji: '🥒', storageReq: 2 },
+            '6': { name: 'Hawaiian',     baseTime: 11, price: 18, difficulty: 2, emoji: '🍍', storageReq: 2 },
+            '8': { name: 'Four Cheese',  baseTime: 10, price: 16, difficulty: 2, emoji: '🧀', storageReq: 2 },
+            // Storage Level 3 — intermediate recipes
+            '5': { name: 'BBQ Chicken',  baseTime: 12, price: 20, difficulty: 3, emoji: '🍗', storageReq: 3 },
+            '4': { name: 'Supreme',      baseTime: 15, price: 25, difficulty: 3, emoji: '👑', storageReq: 3 },
+            '9': { name: 'Meat Feast',   baseTime: 14, price: 22, difficulty: 3, emoji: '🥩', storageReq: 3 },
+            // Storage Level 4 — premium recipes
+            '7': { name: 'Truffle',      baseTime: 18, price: 50, difficulty: 4, emoji: '💎', storageReq: 4 },
+           '10': { name: 'Lobster Royale', baseTime: 20, price: 65, difficulty: 4, emoji: '🦞', storageReq: 4 },
         };
 
         const upgradeCosts = {
@@ -1439,7 +1471,7 @@
             gameState.timesUpgraded = 0;
             gameState.customPizzasMade = 0;
             gameState.customPizzasProfit = 0;
-            gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 };
+            gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0 };
             
             Object.keys(gameState.achievements).forEach(key => {
                 gameState.achievements[key].unlocked = false;
@@ -1690,22 +1722,44 @@
         function renderPizzaMenu() {
             const pizzaMenu = document.getElementById('pizzaMenu');
             pizzaMenu.innerHTML = '';
-            Object.keys(pizzas).forEach(key => {
+
+            // Sort all pizzas by difficulty then by storageReq for consistent ordering
+            const sortedKeys = Object.keys(pizzas).sort((a, b) => {
+                const diff = pizzas[a].difficulty - pizzas[b].difficulty;
+                if (diff !== 0) return diff;
+                return pizzas[a].storageReq - pizzas[b].storageReq;
+            });
+
+            sortedKeys.forEach(key => {
                 const pizza = pizzas[key];
+                const unlocked = pizza.storageReq <= gameState.storageLevel;
                 const price = getEffectivePrice(pizza.price);
                 const bakeTime = getBakeTime(key);
                 const difficulty = '⭐'.repeat(pizza.difficulty);
 
                 const card = document.createElement('div');
-                card.className = 'pizza-card';
-                card.onclick = () => startBakingPizza(key);
-                card.innerHTML = `
-                    <div class="pizza-emoji">${pizza.emoji}</div>
-                    <div class="pizza-name">${pizza.name}</div>
-                    <div class="pizza-price">💵 $${price}</div>
-                    <div class="pizza-time">⏱️ ${bakeTime.toFixed(1)}s</div>
-                    <div class="pizza-difficulty">${difficulty}</div>
-                `;
+
+                if (unlocked) {
+                    card.className = 'pizza-card';
+                    card.onclick = () => startBakingPizza(key);
+                    card.innerHTML = `
+                        <div class="pizza-emoji">${pizza.emoji}</div>
+                        <div class="pizza-name">${pizza.name}</div>
+                        <div class="pizza-price">💵 $${price}</div>
+                        <div class="pizza-time">⏱️ ${bakeTime.toFixed(1)}s</div>
+                        <div class="pizza-difficulty">${difficulty}</div>
+                    `;
+                } else {
+                    card.className = 'pizza-card pizza-card-locked';
+                    card.innerHTML = `
+                        <div class="pizza-emoji" style="filter:grayscale(1);opacity:0.6;">${pizza.emoji}</div>
+                        <div class="pizza-name" style="opacity:0.6;">${pizza.name}</div>
+                        <div class="pizza-lock-badge">🔒 Locked</div>
+                        <div class="pizza-unlock-req">Upgrade Storage to Level ${pizza.storageReq}</div>
+                        <div class="pizza-difficulty" style="opacity:0.5;">${difficulty}</div>
+                    `;
+                }
+
                 pizzaMenu.appendChild(card);
             });
         }
@@ -1782,7 +1836,7 @@
                     key: 'storage',
                     name: 'Storage',
                     emoji: '📦',
-                    desc: 'Unlocks more pizza recipes',
+                    desc: 'Unlocks more pizza recipes: Lvl 2 → +3 recipes, Lvl 3 → +3 recipes, Lvl 4 → +2 premium recipes',
                     max: 4,
                 },
                 {
@@ -2026,14 +2080,20 @@
                 sauceContainer.appendChild(btn);
             });
 
-            // Toppings by tier
+            // Toppings by tier — sort by tier then by value within each tier
             const toppingsContainer = document.getElementById('toppingsContainer');
             toppingsContainer.innerHTML = '';
 
             const tierLabels = { 1: '⭐ Tier 1 — Always Available', 2: '⭐⭐ Tier 2 — Sell basic menu pizzas', 3: '⭐⭐⭐ Tier 3 — Sell more to unlock', 4: '⭐⭐⭐⭐ Tier 4 — Advanced toppings', 5: '⭐⭐⭐⭐⭐ Tier 5 — Premium toppings' };
             let currentTier = 0;
 
-            Object.keys(toppings).forEach(key => {
+            const sortedToppingKeys = Object.keys(toppings).sort((a, b) => {
+                const tierDiff = toppings[a].tier - toppings[b].tier;
+                if (tierDiff !== 0) return tierDiff;
+                return toppings[a].value - toppings[b].value;
+            });
+
+            sortedToppingKeys.forEach(key => {
                 const topping = toppings[key];
                 if (topping.tier !== currentTier) {
                     currentTier = topping.tier;
