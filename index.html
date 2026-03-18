@@ -789,6 +789,228 @@
             background: #ffc107;
             color: #333;
         }
+
+        /* Custom Pizza Builder */
+        .builder-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .builder-section h3 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .base-options, .sauce-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            background: white;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            font-weight: normal;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .option-btn.selected {
+            border-color: #667eea;
+            background: #e8ecfe;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .toppings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .topping-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #e0e0e0;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .topping-card:hover:not(.locked) {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .topping-card.selected-topping {
+            border-color: #667eea;
+            background: #e8ecfe;
+        }
+
+        .topping-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f5f5f5;
+        }
+
+        .topping-emoji {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .topping-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .topping-cost {
+            font-size: 11px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .topping-lock-badge {
+            font-size: 10px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .topping-unlock-req {
+            font-size: 9px;
+            color: #999;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .pizza-cost-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .cost-item {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .cost-label {
+            font-size: 11px;
+            opacity: 0.85;
+            margin-bottom: 4px;
+        }
+
+        .cost-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Pizza Making Modal */
+        .pizza-making-modal {
+            display: none;
+            position: fixed;
+            z-index: 1500;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pizza-making-modal.active {
+            display: flex;
+        }
+
+        .pizza-making-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 460px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+
+        .making-pizza-visual {
+            font-size: 90px;
+            margin: 10px 0;
+            display: inline-block;
+            animation: makingPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes makingPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .making-toppings-row {
+            font-size: 26px;
+            margin: 8px 0;
+            min-height: 40px;
+            letter-spacing: 4px;
+        }
+
+        .making-step-label {
+            font-size: 17px;
+            color: #667eea;
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 28px;
+        }
+
+        .making-result {
+            display: none;
+            background: linear-gradient(135deg, #6bcf7f 0%, #28a745 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .topping-tier-header {
+            font-size: 12px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Custom pizza screen responsive tweaks */
+        @media (max-width: 768px) {
+            .toppings-grid {
+                grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+            }
+            .pizza-cost-summary {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
@@ -903,6 +1125,19 @@
                     <li>⭐ <strong>Quality</strong> - Increases pizza prices</li>
                     <li>📢 <strong>Marketing</strong> - Boosts prices through reputation</li>
                     <li>📦 <strong>Storage</strong> - Store more ingredients</li>
+                    <li>🚚 <strong>Delivery</strong> - Earn a bonus on every pizza sold</li>
+                    <li>📖 <strong>Recipe Mastery</strong> - Boosts your custom pizza sell value</li>
+                    <li>🎁 <strong>Loyalty Program</strong> - Chance of double earnings on each sale</li>
+                </ul>
+
+                <h3>CUSTOM PIZZA BUILDER 🍕</h3>
+                <ul style="margin-left: 20px;">
+                    <li>Click <strong>🍕 Make Your Own Pizza</strong> from the game screen</li>
+                    <li>Choose a base, sauce and up to <strong>6 toppings</strong></li>
+                    <li>The ingredient cost is deducted from your money upfront</li>
+                    <li>Watch a step-by-step animation as your pizza is made!</li>
+                    <li>Sell your custom pizza and pocket the profit</li>
+                    <li><strong>Toppings unlock</strong> by selling enough of specific menu pizzas — sell basic pizzas first to unlock premium toppings!</li>
                 </ul>
 
                 <h3>TIPS</h3>
@@ -911,6 +1146,7 @@
                     <li>Upgrades multiply your profits</li>
                     <li>Random bonuses appear frequently</li>
                     <li>Check achievements for rewards!</li>
+                    <li>Sell lots of basic pizzas to unlock premium toppings for the builder</li>
                 </ul>
             </div>
             <button class="btn-primary" onclick="showScreen('mainMenu')" style="width: 100%;">Back to Menu</button>
@@ -946,6 +1182,7 @@
 
             <div class="action-buttons">
                 <button class="btn-success" onclick="showScreen('shop')">🛒 Upgrade Shop</button>
+                <button class="btn-danger" onclick="openCustomPizzaBuilder()">🍕 Make Your Own Pizza</button>
                 <button class="btn-info" onclick="showScreen('stats')">📊 Stats</button>
                 <button class="btn-secondary" onclick="showScreen('achievements')">🏆 Achievements</button>
                 <button class="btn-warning" onclick="pauseGame()" style="background: #ffc107; color: #333;">⏸️ Pause</button>
@@ -980,6 +1217,69 @@
             <div class="achievements-grid" id="achievementsGrid"></div>
             <button class="btn-primary" onclick="showScreen('gameScreen')" style="width: 100%; margin-top: 20px;">Back to Game</button>
         </div>
+
+        <!-- CUSTOM PIZZA BUILDER SCREEN -->
+        <div class="screen" id="customPizzaScreen">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+                <h1>🍕 Build Your Own Pizza</h1>
+                <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:10px 20px;border-radius:10px;font-size:18px;font-weight:bold;">
+                    💰 <span id="builderMoney">$0</span>
+                </div>
+            </div>
+
+            <!-- Base selection -->
+            <div class="builder-section">
+                <h3>🍞 Choose Your Base</h3>
+                <div class="base-options" id="baseOptions"></div>
+            </div>
+
+            <!-- Sauce selection -->
+            <div class="builder-section">
+                <h3>🍅 Choose Your Sauce</h3>
+                <div class="sauce-options" id="sauceOptions"></div>
+            </div>
+
+            <!-- Toppings selection -->
+            <div class="builder-section">
+                <h3>🧀 Choose Toppings <span style="font-size:13px;color:#999;font-weight:normal;">(up to 6 — sell menu pizzas to unlock more!)</span></h3>
+                <div id="toppingsContainer"></div>
+            </div>
+
+            <!-- Cost summary -->
+            <div class="pizza-cost-summary">
+                <div class="cost-item">
+                    <div class="cost-label">🛒 Ingredient Cost</div>
+                    <div class="cost-value" id="builderCost">$0</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">💵 Sell Value</div>
+                    <div class="cost-value" id="builderValue">$0</div>
+                </div>
+                <div class="cost-item">
+                    <div class="cost-label">📈 Profit</div>
+                    <div class="cost-value" id="builderProfit">$0</div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn-danger" id="makePizzaBtn" onclick="startMakingCustomPizza()" style="flex:1; padding:15px; font-size:18px;">🍕 Make My Pizza!</button>
+                <button class="btn-primary" onclick="showScreen('gameScreen')" style="flex:1; padding:15px;">← Back to Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pizza Making Modal -->
+    <div class="pizza-making-modal" id="pizzaMakingModal">
+        <div class="pizza-making-content">
+            <h2 style="color:#333; margin-bottom:10px;">🍕 Making Your Pizza!</h2>
+            <div class="making-pizza-visual" id="makingPizzaVisual">🍕</div>
+            <div class="making-toppings-row" id="makingToppingsRow"></div>
+            <div class="making-step-label" id="makingStepLabel">Preparing...</div>
+            <div class="progress-bar" style="width:100%;">
+                <div class="progress-fill" id="makingProgressFill" style="width:0%">0%</div>
+            </div>
+            <div class="making-result" id="makingResult"></div>
+        </div>
     </div>
 
     <!-- Pause Overlay -->
@@ -1013,11 +1313,16 @@
             qualityLevel: 1,
             marketingLevel: 1,
             storageLevel: 1,
+            deliveryLevel: 1,
+            recipeLevel: 1,
+            loyaltyLevel: 1,
             currentTime: 0,
             bakingPizzas: [],
             gameRunning: false,
             gamePaused: false,
             difficulty: 'normal',
+            customPizzasMade: 0,
+            customPizzasProfit: 0,
             achievements: {
                 first_pizza: { name: 'First Slice', desc: 'Bake your first pizza', reward: 25, unlocked: false },
                 pizza_master: { name: 'Pizza Master', desc: 'Sell 50 pizzas', reward: 100, unlocked: false },
@@ -1029,6 +1334,9 @@
                 night_shift: { name: 'Night Shift', desc: 'Play for 5 minutes', reward: 50, unlocked: false },
                 truffle_collector: { name: 'Truffle Collector', desc: 'Sell 10 truffle pizzas', reward: 200, unlocked: false },
                 lucky_seven: { name: 'Lucky Seven', desc: 'Earn a $7+ bonus', reward: 75, unlocked: false },
+                pizza_chef: { name: 'Pizza Chef', desc: 'Make your first custom pizza', reward: 50, unlocked: false },
+                master_chef: { name: 'Master Chef', desc: 'Make 10 custom pizzas', reward: 250, unlocked: false },
+                topping_unlocked: { name: 'Topping Collector', desc: 'Unlock 5 premium toppings', reward: 150, unlocked: false },
             },
             pizzaStats: {
                 '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0
@@ -1054,6 +1362,56 @@
             quality: { 1: 0, 2: 75, 3: 150, 4: 300, 5: 600 },
             marketing: { 1: 0, 2: 50, 3: 100, 4: 200, 5: 400 },
             storage: { 1: 0, 2: 100, 3: 250, 4: 500 },
+            delivery: { 1: 0, 2: 75, 3: 175, 4: 350, 5: 700 },
+            recipe: { 1: 0, 2: 100, 3: 225, 4: 450, 5: 900 },
+            loyalty: { 1: 0, 2: 60, 3: 140, 4: 280, 5: 560 },
+        };
+
+        // Custom Pizza: bases, sauces, toppings
+        const pizzaBases = [
+            { id: 'thin',        name: 'Thin Crust',    emoji: '⬜', cost: 2,  value: 4  },
+            { id: 'thick',       name: 'Thick Crust',   emoji: '🟨', cost: 3,  value: 6  },
+            { id: 'stuffed',     name: 'Stuffed Crust', emoji: '🟫', cost: 5,  value: 10 },
+            { id: 'gluten_free', name: 'Gluten Free',   emoji: '🌾', cost: 4,  value: 8  },
+        ];
+
+        const pizzaSauces = [
+            { id: 'tomato', name: 'Tomato',     emoji: '🍅', cost: 1, value: 2 },
+            { id: 'white',  name: 'White Sauce', emoji: '🤍', cost: 2, value: 4 },
+            { id: 'bbq',    name: 'BBQ Sauce',   emoji: '🔴', cost: 2, value: 4 },
+            { id: 'pesto',  name: 'Pesto',       emoji: '🟢', cost: 3, value: 6 },
+        ];
+
+        // unlockReq: null = always available; { pizzaType, amount, pizzaName } = requires selling that many of a specific menu pizza
+        const toppings = {
+            // Tier 1 — always available
+            'cheese':      { name: 'Mozzarella',   emoji: '🧀', cost: 2,  value: 4,  tier: 1, unlockReq: null },
+            'basil':       { name: 'Basil',         emoji: '🌿', cost: 1,  value: 2,  tier: 1, unlockReq: null },
+            'oregano':     { name: 'Oregano',       emoji: '🌱', cost: 1,  value: 2,  tier: 1, unlockReq: null },
+            // Tier 2 — unlock by selling basic menu pizzas
+            'mushrooms':   { name: 'Mushrooms',     emoji: '🍄', cost: 2,  value: 5,  tier: 2, unlockReq: { pizzaType: '1', amount: 5,  pizzaName: 'Margherita'  } },
+            'pepperoni':   { name: 'Pepperoni',     emoji: '🔴', cost: 3,  value: 7,  tier: 2, unlockReq: { pizzaType: '2', amount: 5,  pizzaName: 'Pepperoni'   } },
+            'bell_peppers':{ name: 'Bell Peppers',  emoji: '🫑', cost: 2,  value: 5,  tier: 2, unlockReq: { pizzaType: '3', amount: 5,  pizzaName: 'Vegetarian'  } },
+            'onions':      { name: 'Onions',        emoji: '🧅', cost: 2,  value: 4,  tier: 2, unlockReq: { pizzaType: '1', amount: 10, pizzaName: 'Margherita'  } },
+            // Tier 3 — require more sales of intermediate pizzas
+            'jalapenos':   { name: 'Jalapeños',     emoji: '🌶', cost: 2,  value: 5,  tier: 3, unlockReq: { pizzaType: '2', amount: 15, pizzaName: 'Pepperoni'   } },
+            'pineapple':   { name: 'Pineapple',     emoji: '🍍', cost: 2,  value: 6,  tier: 3, unlockReq: { pizzaType: '6', amount: 8,  pizzaName: 'Hawaiian'    } },
+            'chicken':     { name: 'Chicken',       emoji: '🍗', cost: 4,  value: 10, tier: 3, unlockReq: { pizzaType: '5', amount: 10, pizzaName: 'BBQ Chicken' } },
+            // Tier 4 — require selling harder pizzas
+            'bacon':       { name: 'Bacon',         emoji: '🥓', cost: 4,  value: 10, tier: 4, unlockReq: { pizzaType: '2', amount: 20, pizzaName: 'Pepperoni'   } },
+            'beef':        { name: 'Beef',          emoji: '🥩', cost: 5,  value: 12, tier: 4, unlockReq: { pizzaType: '4', amount: 15, pizzaName: 'Supreme'     } },
+            'olives':      { name: 'Black Olives',  emoji: '🫒', cost: 3,  value: 7,  tier: 4, unlockReq: { pizzaType: '3', amount: 15, pizzaName: 'Vegetarian'  } },
+            // Tier 5 — premium toppings, require rare pizza sales
+            'shrimp':      { name: 'Shrimp',        emoji: '🦐', cost: 6,  value: 15, tier: 5, unlockReq: { pizzaType: '4', amount: 25, pizzaName: 'Supreme'     } },
+            'truffle':     { name: 'Truffle Oil',   emoji: '💎', cost: 10, value: 25, tier: 5, unlockReq: { pizzaType: '7', amount: 10, pizzaName: 'Truffle'     } },
+            'gold':        { name: 'Gold Flakes',   emoji: '✨', cost: 20, value: 50, tier: 5, unlockReq: { pizzaType: '7', amount: 20, pizzaName: 'Truffle'     } },
+        };
+
+        // Custom pizza builder state
+        const customPizzaState = {
+            selectedBase: 'thin',
+            selectedSauce: 'tomato',
+            selectedToppings: [],
         };
 
         // Utility Functions
@@ -1072,10 +1430,15 @@
             gameState.qualityLevel = 1;
             gameState.marketingLevel = 1;
             gameState.storageLevel = 1;
+            gameState.deliveryLevel = 1;
+            gameState.recipeLevel = 1;
+            gameState.loyaltyLevel = 1;
             gameState.currentTime = 0;
             gameState.bakingPizzas = [];
             gameState.totalBonusesEarned = 0;
             gameState.timesUpgraded = 0;
+            gameState.customPizzasMade = 0;
+            gameState.customPizzasProfit = 0;
             gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 };
             
             Object.keys(gameState.achievements).forEach(key => {
@@ -1184,20 +1547,33 @@
                     }
                 }
 
-                gameState.money += earnings + bonus;
-                gameState.totalEarned += earnings + bonus;
-                gameState.totalBonusesEarned += bonus;
+                // Delivery service bonus
+                const deliveryBonus = (gameState.deliveryLevel - 1) * 2;
+
+                // Loyalty program: chance of double earnings
+                const loyaltyChance = (gameState.loyaltyLevel - 1) * 0.05;
+                const doubled = Math.random() < loyaltyChance;
+                const total = (earnings + bonus + deliveryBonus) * (doubled ? 2 : 1);
+
+                gameState.money += total;
+                gameState.totalEarned += total;
+                gameState.totalBonusesEarned += bonus + deliveryBonus;
                 gameState.pizzasSold++;
                 gameState.pizzaStats[pizza.type]++;
 
-                showNotification(`${pizza.emoji} ${pizza.name} sold! (+$${earnings}${bonus > 0 ? ` + $${bonus} bonus!` : ''})`, 'success');
+                let msg = `${pizza.emoji} ${pizza.name} sold! (+$${total}`;
+                if (deliveryBonus > 0) msg += ` incl. $${deliveryBonus} delivery`;
+                if (doubled) msg += ' 🎁 DOUBLED!';
+                msg += ')';
+                showNotification(msg, 'success');
                 checkAchievements();
             });
         }
 
         function upgradePart(part) {
             const currentLevel = gameState[`${part}Level`];
-            const maxLevel = part === 'storage' ? 4 : 5;
+            const maxLevels = { oven: 6, workers: 5, quality: 5, marketing: 5, storage: 4, delivery: 5, recipe: 5, loyalty: 5 };
+            const maxLevel = maxLevels[part] || 5;
 
             if (currentLevel >= maxLevel) {
                 showNotification(`${part} is already at max level!`, 'warning');
@@ -1250,6 +1626,17 @@
 
             if (gameState.pizzaStats['7'] >= 10 && !gameState.achievements.truffle_collector.unlocked) {
                 unlockAchievement('truffle_collector');
+            }
+            if (gameState.customPizzasMade >= 1 && !gameState.achievements.pizza_chef.unlocked) {
+                unlockAchievement('pizza_chef');
+            }
+            if (gameState.customPizzasMade >= 10 && !gameState.achievements.master_chef.unlocked) {
+                unlockAchievement('master_chef');
+            }
+            // Count unlocked premium toppings
+            const unlockedPremium = Object.keys(toppings).filter(k => toppings[k].tier > 1 && isToppingUnlocked(k)).length;
+            if (unlockedPremium >= 5 && !gameState.achievements.topping_unlocked.unlocked) {
+                unlockAchievement('topping_unlocked');
             }
         }
 
@@ -1398,6 +1785,27 @@
                     desc: 'Unlocks more pizza recipes',
                     max: 4,
                 },
+                {
+                    key: 'delivery',
+                    name: 'Delivery Service',
+                    emoji: '🚚',
+                    desc: '+$2 delivery bonus per pizza sold per level',
+                    max: 5,
+                },
+                {
+                    key: 'recipe',
+                    name: 'Recipe Mastery',
+                    emoji: '📖',
+                    desc: '+20% custom pizza sell value per level',
+                    max: 5,
+                },
+                {
+                    key: 'loyalty',
+                    name: 'Loyalty Program',
+                    emoji: '🎁',
+                    desc: '+5% chance of double earnings per level',
+                    max: 5,
+                },
             ];
 
             upgrades.forEach(upgrade => {
@@ -1448,11 +1856,16 @@
                 { label: 'Pizzas Baked', value: gameState.totalPizzasBaked },
                 { label: 'Avg per Pizza', value: gameState.pizzasSold > 0 ? `$${(gameState.totalEarned / gameState.pizzasSold).toFixed(2)}` : '$0' },
                 { label: 'Total Bonuses', value: `$${gameState.totalBonusesEarned}` },
+                { label: 'Custom Pizzas', value: gameState.customPizzasMade },
+                { label: 'Custom Pizza Profit', value: `$${gameState.customPizzasProfit.toLocaleString()}` },
                 { label: 'Oven Level', value: `${gameState.ovenLevel}/6` },
                 { label: 'Workers', value: `${gameState.workersLevel}/5` },
                 { label: 'Quality Level', value: `${gameState.qualityLevel}/5` },
                 { label: 'Marketing Level', value: `${gameState.marketingLevel}/5` },
                 { label: 'Storage Level', value: `${gameState.storageLevel}/4` },
+                { label: 'Delivery Level', value: `${gameState.deliveryLevel}/5` },
+                { label: 'Recipe Mastery', value: `${gameState.recipeLevel}/5` },
+                { label: 'Loyalty Level', value: `${gameState.loyaltyLevel}/5` },
                 { label: 'Time Played', value: `${elapsed}s (${elapsedMinutes}m)` },
             ];
 
@@ -1512,7 +1925,8 @@
                 }
             });
 
-            document.getElementById('achievementProgress').textContent = `${unlocked}/10 Achievements Unlocked`;
+            const total = Object.keys(gameState.achievements).length;
+            document.getElementById('achievementProgress').textContent = `${unlocked}/${total} Achievements Unlocked`;
             document.getElementById('achievementRewards').textContent = `$${totalReward} Rewards`;
         }
 
@@ -1527,6 +1941,251 @@
 
             requestAnimationFrame(gameLoop);
         }
+
+        // ─── Custom Pizza Builder ──────────────────────────────────────────────
+
+        function isToppingUnlocked(key) {
+            const topping = toppings[key];
+            if (!topping.unlockReq) return true;
+            return gameState.pizzaStats[topping.unlockReq.pizzaType] >= topping.unlockReq.amount;
+        }
+
+        function openCustomPizzaBuilder() {
+            customPizzaState.selectedBase = 'thin';
+            customPizzaState.selectedSauce = 'tomato';
+            customPizzaState.selectedToppings = [];
+            renderCustomPizzaBuilder();
+            showScreen('customPizzaScreen');
+        }
+
+        function selectBase(id) {
+            customPizzaState.selectedBase = id;
+            renderCustomPizzaBuilder();
+        }
+
+        function selectSauce(id) {
+            customPizzaState.selectedSauce = id;
+            renderCustomPizzaBuilder();
+        }
+
+        function toggleTopping(key) {
+            if (!isToppingUnlocked(key)) return;
+            const idx = customPizzaState.selectedToppings.indexOf(key);
+            if (idx >= 0) {
+                customPizzaState.selectedToppings.splice(idx, 1);
+            } else {
+                if (customPizzaState.selectedToppings.length >= 6) {
+                    showNotification('Maximum 6 toppings allowed!', 'warning');
+                    return;
+                }
+                customPizzaState.selectedToppings.push(key);
+            }
+            renderCustomPizzaBuilder();
+        }
+
+        function calcCustomCost() {
+            const base = pizzaBases.find(b => b.id === customPizzaState.selectedBase);
+            const sauce = pizzaSauces.find(s => s.id === customPizzaState.selectedSauce);
+            let cost = (base ? base.cost : 0) + (sauce ? sauce.cost : 0);
+            customPizzaState.selectedToppings.forEach(k => { cost += toppings[k].cost; });
+            return cost;
+        }
+
+        function calcCustomValue() {
+            const base = pizzaBases.find(b => b.id === customPizzaState.selectedBase);
+            const sauce = pizzaSauces.find(s => s.id === customPizzaState.selectedSauce);
+            let value = (base ? base.value : 0) + (sauce ? sauce.value : 0);
+            customPizzaState.selectedToppings.forEach(k => { value += toppings[k].value; });
+            // Recipe Mastery bonus: +20% per level above 1
+            const recipeMult = 1 + (gameState.recipeLevel - 1) * 0.2;
+            return Math.floor(value * recipeMult);
+        }
+
+        function renderCustomPizzaBuilder() {
+            document.getElementById('builderMoney').textContent = `$${gameState.money.toLocaleString()}`;
+
+            // Bases
+            const baseContainer = document.getElementById('baseOptions');
+            baseContainer.innerHTML = '';
+            pizzaBases.forEach(base => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn${customPizzaState.selectedBase === base.id ? ' selected' : ''}`;
+                btn.textContent = `${base.emoji} ${base.name} ($${base.cost})`;
+                btn.onclick = () => selectBase(base.id);
+                baseContainer.appendChild(btn);
+            });
+
+            // Sauces
+            const sauceContainer = document.getElementById('sauceOptions');
+            sauceContainer.innerHTML = '';
+            pizzaSauces.forEach(sauce => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn${customPizzaState.selectedSauce === sauce.id ? ' selected' : ''}`;
+                btn.textContent = `${sauce.emoji} ${sauce.name} ($${sauce.cost})`;
+                btn.onclick = () => selectSauce(sauce.id);
+                sauceContainer.appendChild(btn);
+            });
+
+            // Toppings by tier
+            const toppingsContainer = document.getElementById('toppingsContainer');
+            toppingsContainer.innerHTML = '';
+
+            const tierLabels = { 1: '⭐ Tier 1 — Always Available', 2: '⭐⭐ Tier 2 — Sell basic menu pizzas', 3: '⭐⭐⭐ Tier 3 — Sell more to unlock', 4: '⭐⭐⭐⭐ Tier 4 — Advanced toppings', 5: '⭐⭐⭐⭐⭐ Tier 5 — Premium toppings' };
+            let currentTier = 0;
+
+            Object.keys(toppings).forEach(key => {
+                const topping = toppings[key];
+                if (topping.tier !== currentTier) {
+                    currentTier = topping.tier;
+                    const header = document.createElement('div');
+                    header.className = 'topping-tier-header';
+                    header.textContent = tierLabels[currentTier] || `Tier ${currentTier}`;
+                    toppingsContainer.appendChild(header);
+                    const grid = document.createElement('div');
+                    grid.className = 'toppings-grid';
+                    grid.id = `tier-grid-${currentTier}`;
+                    toppingsContainer.appendChild(grid);
+                }
+
+                const unlocked = isToppingUnlocked(key);
+                const selected = customPizzaState.selectedToppings.includes(key);
+
+                const card = document.createElement('div');
+                card.className = `topping-card${selected ? ' selected-topping' : ''}${!unlocked ? ' locked' : ''}`;
+                if (unlocked) card.onclick = () => toggleTopping(key);
+
+                if (unlocked) {
+                    card.innerHTML = `
+                        <div class="topping-emoji">${topping.emoji}</div>
+                        <div class="topping-name">${topping.name}</div>
+                        <div class="topping-cost">+$${topping.cost}</div>
+                        ${selected ? '<div style="color:#667eea;font-size:11px;font-weight:bold;">✓ Added</div>' : ''}
+                    `;
+                } else {
+                    const req = topping.unlockReq;
+                    const progress = gameState.pizzaStats[req.pizzaType] || 0;
+                    card.innerHTML = `
+                        <div class="topping-emoji">${topping.emoji}</div>
+                        <div class="topping-name">${topping.name}</div>
+                        <div class="topping-lock-badge">🔒 Locked</div>
+                        <div class="topping-unlock-req">Sell ${req.amount} ${req.pizzaName}<br>(${progress}/${req.amount})</div>
+                    `;
+                }
+
+                document.getElementById(`tier-grid-${currentTier}`).appendChild(card);
+            });
+
+            // Cost summary
+            const cost = calcCustomCost();
+            const value = calcCustomValue();
+            const profit = value - cost;
+            document.getElementById('builderCost').textContent = `$${cost}`;
+            document.getElementById('builderValue').textContent = `$${value}`;
+            document.getElementById('builderProfit').textContent = `$${profit}`;
+            document.getElementById('builderProfit').style.color = profit >= 0 ? '#6bcf7f' : '#ff6b6b';
+
+            // Disable make button if not enough money or no toppings selected
+            const btn = document.getElementById('makePizzaBtn');
+            if (gameState.money < cost) {
+                btn.disabled = true;
+                btn.textContent = `❌ Not enough money ($${cost} needed)`;
+            } else if (customPizzaState.selectedToppings.length === 0) {
+                btn.disabled = true;
+                btn.textContent = '🍕 Select at least one topping!';
+            } else {
+                btn.disabled = false;
+                btn.textContent = `🍕 Make My Pizza! (-$${cost})`;
+            }
+        }
+
+        function startMakingCustomPizza() {
+            const cost = calcCustomCost();
+            if (gameState.money < cost) {
+                showNotification(`Not enough money! Need $${cost}`, 'error');
+                return;
+            }
+            if (customPizzaState.selectedToppings.length === 0) {
+                showNotification('Please select at least one topping!', 'warning');
+                return;
+            }
+
+            // Deduct cost immediately
+            gameState.money -= cost;
+            renderGameScreen();
+            renderCustomPizzaBuilder();
+
+            // Open making modal
+            const modal = document.getElementById('pizzaMakingModal');
+            modal.classList.add('active');
+            document.getElementById('makingProgressFill').style.width = '0%';
+            document.getElementById('makingProgressFill').textContent = '0%';
+            document.getElementById('makingToppingsRow').textContent = '';
+            document.getElementById('makingResult').style.display = 'none';
+            document.getElementById('makingResult').textContent = '';
+
+            const base = pizzaBases.find(b => b.id === customPizzaState.selectedBase);
+            const sauce = pizzaSauces.find(s => s.id === customPizzaState.selectedSauce);
+            const selectedToppingKeys = [...customPizzaState.selectedToppings];
+            const sellValue = calcCustomValue();
+
+            // Build the animation steps
+            const steps = [];
+            steps.push({ label: `🍞 Preparing ${base.name} dough...`, progress: 8 });
+            steps.push({ label: `${sauce.emoji} Spreading ${sauce.name}...`, progress: 18 });
+            selectedToppingKeys.forEach((key, i) => {
+                const t = toppings[key];
+                const prog = 18 + Math.round(((i + 1) / selectedToppingKeys.length) * 55);
+                steps.push({ label: `${t.emoji} Adding ${t.name}...`, progress: prog, addEmoji: t.emoji });
+            });
+            steps.push({ label: '🔥 Sliding into oven...', progress: 80 });
+            steps.push({ label: '⏳ Baking your masterpiece...', progress: 92 });
+            steps.push({ label: '🍕 Almost done!', progress: 100 });
+
+            let stepIndex = 0;
+            let addedEmojis = '';
+
+            function runStep() {
+                if (stepIndex >= steps.length) {
+                    // Done!
+                    document.getElementById('makingStepLabel').textContent = '✅ Pizza Ready!';
+                    const result = document.getElementById('makingResult');
+                    const profit = sellValue - cost;
+                    result.textContent = `🍕 Sold for $${sellValue}! Profit: ${profit >= 0 ? '+' : ''}$${profit}`;
+                    result.style.display = 'block';
+
+                    gameState.money += sellValue;
+                    gameState.totalEarned += sellValue;
+                    gameState.customPizzasMade++;
+                    gameState.customPizzasProfit += (sellValue - cost);
+                    renderGameScreen();
+                    checkAchievements();
+
+                    setTimeout(() => {
+                        modal.classList.remove('active');
+                        showNotification(`🍕 Custom pizza sold for $${sellValue}! Profit: $${sellValue - cost}`, 'success');
+                        // Reset builder
+                        customPizzaState.selectedToppings = [];
+                        renderCustomPizzaBuilder();
+                    }, 2000);
+                    return;
+                }
+
+                const step = steps[stepIndex];
+                document.getElementById('makingStepLabel').textContent = step.label;
+                document.getElementById('makingProgressFill').style.width = `${step.progress}%`;
+                document.getElementById('makingProgressFill').textContent = `${step.progress}%`;
+                if (step.addEmoji) {
+                    addedEmojis += step.addEmoji;
+                    document.getElementById('makingToppingsRow').textContent = addedEmojis;
+                }
+                stepIndex++;
+                setTimeout(runStep, stepIndex <= 2 ? 900 : 700);
+            }
+
+            runStep();
+        }
+
+        // ─── End Custom Pizza Builder ──────────────────────────────────────────
 
         // Event Listeners for Shop Button
         document.addEventListener('click', (e) => {
