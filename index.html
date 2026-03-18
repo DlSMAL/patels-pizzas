@@ -1009,7 +1009,7 @@
             pizzasSold: 0,
             totalPizzasBaked: 0,
             ovenLevel: 1,
-            workers: 1,
+            workersLevel: 1,
             qualityLevel: 1,
             marketingLevel: 1,
             storageLevel: 1,
@@ -1068,7 +1068,7 @@
             gameState.pizzasSold = 0;
             gameState.totalPizzasBaked = 0;
             gameState.ovenLevel = 1;
-            gameState.workers = 1;
+            gameState.workersLevel = 1;
             gameState.qualityLevel = 1;
             gameState.marketingLevel = 1;
             gameState.storageLevel = 1;
@@ -1135,7 +1135,7 @@
                 return;
             }
 
-            const maxCapacity = gameState.workers + 1;
+            const maxCapacity = gameState.workersLevel + 1;
             if (gameState.bakingPizzas.length >= maxCapacity) {
                 showNotification(`Oven is full! Max capacity: ${maxCapacity}`, 'error');
                 return;
@@ -1233,7 +1233,7 @@
             if (gameState.ovenLevel >= 5 && !gameState.achievements.oven_king.unlocked) {
                 unlockAchievement('oven_king');
             }
-            if (gameState.workers >= 4 && !gameState.achievements.worker_bee.unlocked) {
+            if (gameState.workersLevel >= 4 && !gameState.achievements.worker_bee.unlocked) {
                 unlockAchievement('worker_bee');
             }
             if (gameState.qualityLevel >= 5 && !gameState.achievements.quality_snob.unlocked) {
@@ -1449,7 +1449,7 @@
                 { label: 'Avg per Pizza', value: gameState.pizzasSold > 0 ? `$${(gameState.totalEarned / gameState.pizzasSold).toFixed(2)}` : '$0' },
                 { label: 'Total Bonuses', value: `$${gameState.totalBonusesEarned}` },
                 { label: 'Oven Level', value: `${gameState.ovenLevel}/6` },
-                { label: 'Workers', value: `${gameState.workers}/5` },
+                { label: 'Workers', value: `${gameState.workersLevel}/5` },
                 { label: 'Quality Level', value: `${gameState.qualityLevel}/5` },
                 { label: 'Marketing Level', value: `${gameState.marketingLevel}/5` },
                 { label: 'Storage Level', value: `${gameState.storageLevel}/4` },
