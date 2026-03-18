@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍕 Patel's Pizza Tycoon 🍕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Animated Background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(
+                45deg,
+                #ff6b6b 0%,
+                #ffd93d 25%,
+                #6bcf7f 50%,
+                #4d96ff 75%,
+                #ff6b6b 100%
+            );
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .pizza-bg {
+            position: fixed;
+            opacity: 0.1;
+            font-size: 200px;
+            z-index: -1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .pizza-1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .pizza-2 { top: 50%; right: 15%; animation-delay: 2s; }
+        .pizza-3 { bottom: 10%; left: 20%; animation-delay: 4s; }
+
+        /* Container */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 1200px;
+            width: 90%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Intro Screen */
+        .intro-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .intro-content {
+            animation: fadeInScale 1s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .intro-logo {
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .intro-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .intro-credits {
+            font-size: 24px;
+            margin-bottom: 30px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .intro-copyright {
+            font-size: 18px;
+            margin-bottom: 50px;
+            opacity: 0.9;
+        }
+
+        .intro-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Main Menu Screen */
+        .menu-banner {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .menu-banner h1 {
+            font-size: 48px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .menu-banner p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Game Screen */
+        .game-screen {
+            flex-direction: column;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat {
+            padding: 10px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .pizza-menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pizza-card {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            color: white;
+            text-align: center;
+        }
+
+        .pizza-card:hover {
+            transform: translateY(-5px);
+            border-color: #fff;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .pizza-emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .pizza-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .pizza-price {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .pizza-time {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .pizza-difficulty {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .oven-display {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .baking-pizza {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.1s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Buttons */
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 217, 61, 0.3);
+        }
+
+        .btn-success {
+            background: #6bcf7f;
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(107, 207, 127, 0.3);
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-info {
+            background: #4d96ff;
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(77, 150, 255, 0.3);
+        }
+
+        /* Shop Screen */
+        .shop-screen {
+            flex-direction: column;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .upgrade-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .upgrade-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .upgrade-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .upgrade-emoji {
+            font-size: 30px;
+        }
+
+        .upgrade-level {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .upgrade-desc {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .upgrade-cost {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .upgrade-cost.affordable {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .upgrade-cost.expensive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Stats Screen */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .pizza-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .pizza-stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .pizza-stat-emoji {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .pizza-stat-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .pizza-stat-count {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Achievements Screen */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffd93d;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-card.unlocked {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left-color: #28a745;
+        }
+
+        .achievement-card.locked {
+            opacity: 0.7;
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left-color: #dc3545;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .achievement-status {
+            font-size: 18px;
+        }
+
+        .achievement-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .achievement-desc {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .achievement-reward {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal-body {
+            text-align: left;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Achievement Popup */
+        .achievement-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideInRight 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .achievement-popup-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-popup-desc {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .achievement-popup-reward {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Pause Screen */
+        .pause-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pause-overlay.active {
+            display: flex;
+        }
+
+        .pause-menu {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .pause-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .pause-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .intro-title {
+                font-size: 36px;
+            }
+
+            .intro-credits {
+                font-size: 18px;
+            }
+
+            .menu-banner h1 {
+                font-size: 32px;
+            }
+
+            .game-header {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .pizza-menu {
+                grid-template-columns: 1fr;
+            }
+
+            .pause-menu {
+                min-width: 300px;
+            }
+
+            .intro-logo {
+                font-size: 60px;
+            }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            animation: slideInLeft 0.3s ease;
+            z-index: 900;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.warning {
+            background: #ffc107;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="background"></div>
+    <div class="pizza-bg pizza-1">🍕</div>
+    <div class="pizza-bg pizza-2">🍕</div>
+    <div class="pizza-bg pizza-3">🍕</div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- INTRO SCREEN -->
+        <div class="screen intro-screen active" id="introScreen">
+            <div class="intro-content">
+                <div class="intro-logo">🍕</div>
+                <div class="intro-title">PATEL'S PIZZA TYCOON</div>
+                <div class="intro-credits">Rizwan Waseem × Ali Imran</div>
+                <div class="intro-copyright">© 2026 All Rights Reserved</div>
+                <div class="intro-buttons">
+                    <button class="btn-primary" onclick="showScreen('mainMenu')">Start Game</button>
+                    <button class="btn-secondary" onclick="showScreen('tos')">Terms of Service</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TERMS OF SERVICE SCREEN -->
+        <div class="screen" id="tos">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1>Terms of Service</h1>
+            </div>
+            <div style="max-height: 500px; overflow-y: auto; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; line-height: 1.8; color: #333;">
+                <h3>1. License Grant</h3>
+                <p>Patel's Pizza Tycoon © 2026. All Rights Reserved. This game is provided for personal, non-commercial use only. Unauthorized copying, distribution, or modification is strictly prohibited.</p>
+
+                <h3>2. Intellectual Property Rights</h3>
+                <p>All content, including but not limited to text, graphics, logos, images, and software, is the exclusive property of Rizwan Waseem and Ali Imran. All rights are reserved worldwide.</p>
+
+                <h3>3. User Responsibilities</h3>
+                <p>You agree not to:</p>
+                <ul style="margin-left: 20px;">
+                    <li>Reproduce, duplicate, copy, sell, or resell the game</li>
+                    <li>Attempt to reverse engineer or decompile the game code</li>
+                    <li>Use the game for any illegal or unauthorized purpose</li>
+                    <li>Modify or create derivative works without explicit permission</li>
+                </ul>
+
+                <h3>4. Disclaimer of Warranties</h3>
+                <p>The game is provided "as is" without any warranties, express or implied. The creators are not liable for any damages arising from your use of the game.</p>
+
+                <h3>5. Limitation of Liability</h3>
+                <p>In no event shall Rizwan Waseem or Ali Imran be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the game.</p>
+
+                <h3>6. Termination</h3>
+                <p>We reserve the right to terminate your access to the game at any time, without notice, for conduct that we believe violates these terms or is harmful to other users or the game itself.</p>
+
+                <h3>7. Changes to Terms</h3>
+                <p>We reserve the right to modify these terms at any time. Your continued use of the game following such modifications constitutes your acceptance of the updated terms.</p>
+
+                <h3>8. Governing Law</h3>
+                <p>These terms and conditions are governed by and construed in accordance with applicable law, and you irrevocably submit to the exclusive jurisdiction of the courts in that location.</p>
+
+                <h3>9. Contact</h3>
+                <p>If you have any questions about these Terms of Service, please contact us through the game.</p>
+
+                <h3>© 2026 Rizwan Waseem × Ali Imran. All Rights Reserved.</h3>
+            </div>
+            <button class="btn-primary" onclick="showScreen('introScreen')" style="width: 100%;">I Agree & Continue</button>
+        </div>
+
+        <!-- MAIN MENU SCREEN -->
+        <div class="screen" id="mainMenu">
+            <div class="menu-banner">
+                <h1>🍕 PATEL'S PIZZA TYCOON 🍕</h1>
+                <p>Build Your Pizza Empire & Get Rich! 💰</p>
+            </div>
+            <div class="menu-options">
+                <button class="btn-primary" onclick="startNewGame()" style="padding: 15px;">🎮 Start New Game</button>
+                <button class="btn-info" onclick="loadGame()" style="padding: 15px;">📂 Load Game</button>
+                <button class="btn-secondary" onclick="showScreen('instructions')" style="padding: 15px;">📖 How to Play</button>
+                <button class="btn-danger" onclick="location.reload()" style="padding: 15px;">❌ Quit Game</button>
+            </div>
+        </div>
+
+        <!-- INSTRUCTIONS SCREEN -->
+        <div class="screen" id="instructions">
+            <h1>📖 How to Play</h1>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; overflow-y: auto; max-height: 400px; line-height: 1.8; color: #333; margin-bottom: 20px;">
+                <h3>OBJECTIVE</h3>
+                <p>Build the most successful pizza shop empire!</p>
+
+                <h3>GAMEPLAY</h3>
+                <ol style="margin-left: 20px;">
+                    <li>Order pizzas from the menu (1-7)</li>
+                    <li>Watch them bake in real-time</li>
+                    <li>Collect money when they're ready</li>
+                    <li>Invest in upgrades to increase profits</li>
+                </ol>
+
+                <h3>MENU CODES</h3>
+                <ul style="margin-left: 20px;">
+                    <li><strong>[1-7]</strong> Bake a pizza</li>
+                    <li><strong>[U]</strong> Open upgrade shop</li>
+                    <li><strong>[S]</strong> View statistics</li>
+                    <li><strong>[A]</strong> View achievements</li>
+                    <li><strong>[P]</strong> Pause game</li>
+                </ul>
+
+                <h3>UPGRADES</h3>
+                <ul style="margin-left: 20px;">
+                    <li>🔥 <strong>Oven</strong> - Reduces bake time</li>
+                    <li>👨‍💼 <strong>Workers</strong> - Increases oven capacity</li>
+                    <li>⭐ <strong>Quality</strong> - Increases pizza prices</li>
+                    <li>📢 <strong>Marketing</strong> - Boosts prices through reputation</li>
+                    <li>📦 <strong>Storage</strong> - Store more ingredients</li>
+                </ul>
+
+                <h3>TIPS</h3>
+                <ul style="margin-left: 20px;">
+                    <li>Higher difficulty = better rewards!</li>
+                    <li>Upgrades multiply your profits</li>
+                    <li>Random bonuses appear frequently</li>
+                    <li>Check achievements for rewards!</li>
+                </ul>
+            </div>
+            <button class="btn-primary" onclick="showScreen('mainMenu')" style="width: 100%;">Back to Menu</button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div class="screen game-screen" id="gameScreen">
+            <div class="game-header">
+                <div class="stat">
+                    <div class="stat-label">💰 Money</div>
+                    <div class="stat-value" id="moneyDisplay">$100</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">🍕 Sold</div>
+                    <div class="stat-value" id="pizzasSoldDisplay">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">📊 Total Earned</div>
+                    <div class="stat-value" id="totalEarnedDisplay">$0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">⏱️ Time</div>
+                    <div class="stat-value" id="timeDisplay">0s</div>
+                </div>
+            </div>
+
+            <div class="pizza-menu" id="pizzaMenu"></div>
+
+            <div class="oven-display" id="ovenDisplay" style="display: none;">
+                <strong>🔥 OVEN BAKING:</strong>
+                <div id="bakingList"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-success" onclick="showScreen('shop')">🛒 Upgrade Shop</button>
+                <button class="btn-info" onclick="showScreen('stats')">📊 Stats</button>
+                <button class="btn-secondary" onclick="showScreen('achievements')">🏆 Achievements</button>
+                <button class="btn-warning" onclick="pauseGame()" style="background: #ffc107; color: #333;">⏸️ Pause</button>
+            </div>
+        </div>
+
+        <!-- SHOP SCREEN -->
+        <div class="screen shop-screen" id="shop">
+            <h1>🏪 Upgrade Shop</h1>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 20px; font-weight: bold;">
+                💰 Money: <span id="shopMoney">$100</span>
+            </div>
+            <div class="shop-grid" id="upgradesGrid"></div>
+            <button class="btn-primary" onclick="showScreen('gameScreen')" style="width: 100%; margin-top: 20px;">🎮 Back to Game</button>
+        </div>
+
+        <!-- STATS SCREEN -->
+        <div class="screen" id="stats">
+            <h1>📊 Statistics</h1>
+            <div class="stats-grid" id="statsGrid"></div>
+            <h2 style="margin-top: 30px; margin-bottom: 15px;">🍕 Pizzas Sold by Type</h2>
+            <div class="pizza-stats" id="pizzaStats"></div>
+            <button class="btn-primary" onclick="showScreen('gameScreen')" style="width: 100%; margin-top: 20px;">Back to Game</button>
+        </div>
+
+        <!-- ACHIEVEMENTS SCREEN -->
+        <div class="screen" id="achievements">
+            <h1>🏆 Achievements</h1>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: bold;">
+                <span id="achievementProgress">0/10 Achievements Unlocked</span> | 💰 <span id="achievementRewards">$0 Rewards</span>
+            </div>
+            <div class="achievements-grid" id="achievementsGrid"></div>
+            <button class="btn-primary" onclick="showScreen('gameScreen')" style="width: 100%; margin-top: 20px;">Back to Game</button>
+        </div>
+    </div>
+
+    <!-- Pause Overlay -->
+    <div class="pause-overlay" id="pauseOverlay">
+        <div class="pause-menu">
+            <div class="pause-title">⏸️ PAUSED</div>
+            <div class="pause-buttons">
+                <button class="btn-primary" onclick="resumeGame()">▶️ Resume Game</button>
+                <button class="btn-success" onclick="saveGame()">💾 Save Game</button>
+                <button class="btn-info" onclick="showScreen('mainMenu'); hidePause()">🏠 Main Menu</button>
+                <button class="btn-danger" onclick="location.reload()">❌ Quit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Achievement Popup Container -->
+    <div id="achievementPopupContainer"></div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
+
+    <script>
+        // Game State
+        const gameState = {
+            money: 100,
+            totalEarned: 0,
+            pizzasSold: 0,
+            totalPizzasBaked: 0,
+            ovenLevel: 1,
+            workers: 1,
+            qualityLevel: 1,
+            marketingLevel: 1,
+            storageLevel: 1,
+            currentTime: 0,
+            bakingPizzas: [],
+            gameRunning: false,
+            gamePaused: false,
+            difficulty: 'normal',
+            achievements: {
+                first_pizza: { name: 'First Slice', desc: 'Bake your first pizza', reward: 25, unlocked: false },
+                pizza_master: { name: 'Pizza Master', desc: 'Sell 50 pizzas', reward: 100, unlocked: false },
+                entrepreneur: { name: 'Entrepreneur', desc: 'Earn $1000', reward: 150, unlocked: false },
+                oven_king: { name: 'Oven King', desc: 'Upgrade oven to level 5', reward: 200, unlocked: false },
+                worker_bee: { name: 'Worker Bee', desc: 'Hire 4 workers', reward: 150, unlocked: false },
+                quality_snob: { name: 'Quality Snob', desc: 'Max out quality', reward: 150, unlocked: false },
+                marketing_guru: { name: 'Marketing Guru', desc: 'Max out marketing', reward: 150, unlocked: false },
+                night_shift: { name: 'Night Shift', desc: 'Play for 5 minutes', reward: 50, unlocked: false },
+                truffle_collector: { name: 'Truffle Collector', desc: 'Sell 10 truffle pizzas', reward: 200, unlocked: false },
+                lucky_seven: { name: 'Lucky Seven', desc: 'Earn a $7+ bonus', reward: 75, unlocked: false },
+            },
+            pizzaStats: {
+                '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0
+            },
+            totalBonusesEarned: 0,
+            timesUpgraded: 0,
+            sessionStartTime: 0,
+        };
+
+        const pizzas = {
+            '1': { name: 'Margherita', baseTime: 8, price: 12, difficulty: 1, emoji: '🍅' },
+            '2': { name: 'Pepperoni', baseTime: 10, price: 15, difficulty: 2, emoji: '🌶️' },
+            '3': { name: 'Vegetarian', baseTime: 9, price: 14, difficulty: 2, emoji: '🥒' },
+            '4': { name: 'Supreme', baseTime: 15, price: 25, difficulty: 3, emoji: '👑' },
+            '5': { name: 'BBQ Chicken', baseTime: 12, price: 20, difficulty: 3, emoji: '🍗' },
+            '6': { name: 'Hawaiian', baseTime: 11, price: 18, difficulty: 2, emoji: '🍍' },
+            '7': { name: 'Truffle', baseTime: 18, price: 50, difficulty: 4, emoji: '💎' },
+        };
+
+        const upgradeCosts = {
+            oven: { 1: 0, 2: 100, 3: 250, 4: 500, 5: 1000, 6: 2000 },
+            workers: { 1: 0, 2: 150, 3: 350, 4: 700, 5: 1500 },
+            quality: { 1: 0, 2: 75, 3: 150, 4: 300, 5: 600 },
+            marketing: { 1: 0, 2: 50, 3: 100, 4: 200, 5: 400 },
+            storage: { 1: 0, 2: 100, 3: 250, 4: 500 },
+        };
+
+        // Utility Functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startNewGame() {
+            gameState.money = 100;
+            gameState.totalEarned = 0;
+            gameState.pizzasSold = 0;
+            gameState.totalPizzasBaked = 0;
+            gameState.ovenLevel = 1;
+            gameState.workers = 1;
+            gameState.qualityLevel = 1;
+            gameState.marketingLevel = 1;
+            gameState.storageLevel = 1;
+            gameState.currentTime = 0;
+            gameState.bakingPizzas = [];
+            gameState.totalBonusesEarned = 0;
+            gameState.timesUpgraded = 0;
+            gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0 };
+            
+            Object.keys(gameState.achievements).forEach(key => {
+                gameState.achievements[key].unlocked = false;
+            });
+
+            gameState.sessionStartTime = Date.now();
+            gameState.gameRunning = true;
+            gameState.gamePaused = false;
+
+            renderGameScreen();
+            showScreen('gameScreen');
+            gameLoop();
+        }
+
+        function saveGame() {
+            localStorage.setItem('patelsGameSave', JSON.stringify(gameState));
+            showNotification('Game saved successfully!', 'success');
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('patelsGameSave');
+            if (saved) {
+                Object.assign(gameState, JSON.parse(saved));
+                gameState.gameRunning = true;
+                gameState.gamePaused = false;
+                gameState.sessionStartTime = Date.now();
+                renderGameScreen();
+                showScreen('gameScreen');
+                gameLoop();
+                showNotification('Game loaded successfully!', 'success');
+            } else {
+                showNotification('No save file found!', 'error');
+            }
+        }
+
+        function getEffectivePrice(basePrice) {
+            const qualityMult = 1 + (gameState.qualityLevel - 1) * 0.15;
+            const marketingMult = 1 + (gameState.marketingLevel - 1) * 0.1;
+            return Math.max(1, Math.floor(basePrice * qualityMult * marketingMult));
+        }
+
+        function getBakeTime(pizzaType) {
+            const pizza = pizzas[pizzaType];
+            let baseTime = pizza.baseTime - (gameState.ovenLevel * 0.3);
+            baseTime = Math.max(2, baseTime);
+
+            const diffMult = gameState.difficulty === 'easy' ? 0.8 : gameState.difficulty === 'hard' ? 1.2 : 1.0;
+            return baseTime * diffMult;
+        }
+
+        function startBakingPizza(pizzaType) {
+            if (!pizzas[pizzaType]) {
+                showNotification('Invalid pizza type!', 'error');
+                return;
+            }
+
+            const maxCapacity = gameState.workers + 1;
+            if (gameState.bakingPizzas.length >= maxCapacity) {
+                showNotification(`Oven is full! Max capacity: ${maxCapacity}`, 'error');
+                return;
+            }
+
+            const pizza = pizzas[pizzaType];
+            const bakeTime = getBakeTime(pizzaType);
+
+            gameState.bakingPizzas.push({
+                type: pizzaType,
+                name: pizza.name,
+                emoji: pizza.emoji,
+                price: getEffectivePrice(pizza.price),
+                startTime: gameState.currentTime,
+                bakeTime: bakeTime,
+                qualityBonus: Math.floor(Math.random() * (gameState.qualityLevel + 1)),
+            });
+
+            gameState.totalPizzasBaked++;
+            showNotification(`Started baking ${pizza.emoji} ${pizza.name}!`, 'success');
+            renderGameScreen();
+        }
+
+        function checkDonePizzas() {
+            const done = [];
+            const notDone = [];
+
+            gameState.bakingPizzas.forEach(pizza => {
+                if (gameState.currentTime - pizza.startTime >= pizza.bakeTime) {
+                    done.push(pizza);
+                } else {
+                    notDone.push(pizza);
+                }
+            });
+
+            gameState.bakingPizzas = notDone;
+
+            done.forEach(pizza => {
+                const earnings = pizza.price + pizza.qualityBonus;
+                let bonus = 0;
+
+                if (Math.random() < 0.3) {
+                    bonus = Math.floor(Math.random() * 5) + 1;
+                    if (bonus >= 7 && !gameState.achievements.lucky_seven.unlocked) {
+                        unlockAchievement('lucky_seven');
+                    }
+                }
+
+                gameState.money += earnings + bonus;
+                gameState.totalEarned += earnings + bonus;
+                gameState.totalBonusesEarned += bonus;
+                gameState.pizzasSold++;
+                gameState.pizzaStats[pizza.type]++;
+
+                showNotification(`${pizza.emoji} ${pizza.name} sold! (+$${earnings}${bonus > 0 ? ` + $${bonus} bonus!` : ''})`, 'success');
+                checkAchievements();
+            });
+        }
+
+        function upgradePart(part) {
+            const currentLevel = gameState[`${part}Level`];
+            const maxLevel = part === 'storage' ? 4 : 5;
+
+            if (currentLevel >= maxLevel) {
+                showNotification(`${part} is already at max level!`, 'warning');
+                return;
+            }
+
+            const cost = upgradeCosts[part][currentLevel + 1];
+
+            if (gameState.money >= cost) {
+                gameState.money -= cost;
+                gameState[`${part}Level`]++;
+                gameState.timesUpgraded++;
+                showNotification(`${part} upgraded to level ${gameState[`${part}Level`]}!`, 'success');
+                checkAchievements();
+                renderGameScreen();
+                updateShop();
+            } else {
+                showNotification(`Not enough money! Need $${cost}, have $${gameState.money}`, 'error');
+            }
+        }
+
+        function checkAchievements() {
+            if (gameState.totalPizzasBaked >= 1 && !gameState.achievements.first_pizza.unlocked) {
+                unlockAchievement('first_pizza');
+            }
+            if (gameState.pizzasSold >= 50 && !gameState.achievements.pizza_master.unlocked) {
+                unlockAchievement('pizza_master');
+            }
+            if (gameState.totalEarned >= 1000 && !gameState.achievements.entrepreneur.unlocked) {
+                unlockAchievement('entrepreneur');
+            }
+            if (gameState.ovenLevel >= 5 && !gameState.achievements.oven_king.unlocked) {
+                unlockAchievement('oven_king');
+            }
+            if (gameState.workers >= 4 && !gameState.achievements.worker_bee.unlocked) {
+                unlockAchievement('worker_bee');
+            }
+            if (gameState.qualityLevel >= 5 && !gameState.achievements.quality_snob.unlocked) {
+                unlockAchievement('quality_snob');
+            }
+            if (gameState.marketingLevel >= 5 && !gameState.achievements.marketing_guru.unlocked) {
+                unlockAchievement('marketing_guru');
+            }
+
+            const elapsed = (Date.now() - gameState.sessionStartTime) / 1000;
+            if (elapsed >= 300 && !gameState.achievements.night_shift.unlocked) {
+                unlockAchievement('night_shift');
+            }
+
+            if (gameState.pizzaStats['7'] >= 10 && !gameState.achievements.truffle_collector.unlocked) {
+                unlockAchievement('truffle_collector');
+            }
+        }
+
+        function unlockAchievement(id) {
+            if (gameState.achievements[id] && !gameState.achievements[id].unlocked) {
+                gameState.achievements[id].unlocked = true;
+                gameState.money += gameState.achievements[id].reward;
+                showAchievementPopup(gameState.achievements[id]);
+                updateAchievements();
+            }
+        }
+
+        function showAchievementPopup(achievement) {
+            const container = document.getElementById('achievementPopupContainer');
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = `
+                <div class="achievement-popup-title">🏆 ${achievement.name}</div>
+                <div class="achievement-popup-desc">${achievement.desc}</div>
+                <div class="achievement-popup-reward">+$${achievement.reward}</div>
+            `;
+            container.appendChild(popup);
+
+            setTimeout(() => popup.remove(), 3000);
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            container.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function pauseGame() {
+            gameState.gamePaused = true;
+            document.getElementById('pauseOverlay').classList.add('active');
+        }
+
+        function resumeGame() {
+            gameState.gamePaused = false;
+            hidePause();
+        }
+
+        function hidePause() {
+            document.getElementById('pauseOverlay').classList.remove('active');
+        }
+
+        function renderGameScreen() {
+            // Pizza Menu
+            const pizzaMenu = document.getElementById('pizzaMenu');
+            pizzaMenu.innerHTML = '';
+            Object.keys(pizzas).forEach(key => {
+                const pizza = pizzas[key];
+                const price = getEffectivePrice(pizza.price);
+                const bakeTime = getBakeTime(key);
+                const difficulty = '⭐'.repeat(pizza.difficulty);
+
+                const card = document.createElement('div');
+                card.className = 'pizza-card';
+                card.onclick = () => startBakingPizza(key);
+                card.innerHTML = `
+                    <div class="pizza-emoji">${pizza.emoji}</div>
+                    <div class="pizza-name">${pizza.name}</div>
+                    <div class="pizza-price">💵 $${price}</div>
+                    <div class="pizza-time">⏱️ ${bakeTime.toFixed(1)}s</div>
+                    <div class="pizza-difficulty">${difficulty}</div>
+                `;
+                pizzaMenu.appendChild(card);
+            });
+
+            // Update stats
+            document.getElementById('moneyDisplay').textContent = `$${gameState.money.toLocaleString()}`;
+            document.getElementById('pizzasSoldDisplay').textContent = gameState.pizzasSold;
+            document.getElementById('totalEarnedDisplay').textContent = `$${gameState.totalEarned.toLocaleString()}`;
+            
+            const elapsed = Math.floor((Date.now() - gameState.sessionStartTime) / 1000);
+            document.getElementById('timeDisplay').textContent = `${elapsed}s`;
+
+            // Oven Display
+            const ovenDisplay = document.getElementById('ovenDisplay');
+            const bakingList = document.getElementById('bakingList');
+            
+            if (gameState.bakingPizzas.length > 0) {
+                ovenDisplay.style.display = 'block';
+                bakingList.innerHTML = '';
+                gameState.bakingPizzas.forEach(pizza => {
+                    const progress = Math.min(100, ((gameState.currentTime - pizza.startTime) / pizza.bakeTime) * 100);
+                    const item = document.createElement('div');
+                    item.className = 'baking-pizza';
+                    item.innerHTML = `
+                        <div>${pizza.emoji} ${pizza.name}</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%">${progress.toFixed(0)}%</div>
+                        </div>
+                    `;
+                    bakingList.appendChild(item);
+                });
+            } else {
+                ovenDisplay.style.display = 'none';
+            }
+        }
+
+        function updateShop() {
+            const grid = document.getElementById('upgradesGrid');
+            grid.innerHTML = '';
+
+            document.getElementById('shopMoney').textContent = `$${gameState.money.toLocaleString()}`;
+
+            const upgrades = [
+                {
+                    key: 'oven',
+                    name: 'Oven',
+                    emoji: '🔥',
+                    desc: 'Reduces bake time by 30% per level',
+                    max: 6,
+                },
+                {
+                    key: 'workers',
+                    name: 'Workers',
+                    emoji: '👨‍💼',
+                    desc: 'Increases oven capacity',
+                    max: 5,
+                },
+                {
+                    key: 'quality',
+                    name: 'Quality',
+                    emoji: '⭐',
+                    desc: '+15% price per level, more bonuses',
+                    max: 5,
+                },
+                {
+                    key: 'marketing',
+                    name: 'Marketing',
+                    emoji: '📢',
+                    desc: '+10% price per level',
+                    max: 5,
+                },
+                {
+                    key: 'storage',
+                    name: 'Storage',
+                    emoji: '📦',
+                    desc: 'Unlocks more pizza recipes',
+                    max: 4,
+                },
+            ];
+
+            upgrades.forEach(upgrade => {
+                const level = gameState[`${upgrade.key}Level`];
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+
+                if (level >= upgrade.max) {
+                    card.innerHTML = `
+                        <div class="upgrade-header">
+                            <div class="upgrade-name">${upgrade.emoji} ${upgrade.name}</div>
+                            <div class="upgrade-level">Max ⭐</div>
+                        </div>
+                        <div class="upgrade-desc">${upgrade.desc}</div>
+                        <div style="text-align: center; color: #667eea; font-weight: bold;">Maxed Out!</div>
+                    `;
+                } else {
+                    const cost = upgradeCosts[upgrade.key][level + 1];
+                    const affordable = gameState.money >= cost;
+                    card.innerHTML = `
+                        <div class="upgrade-header">
+                            <div class="upgrade-name">${upgrade.emoji} ${upgrade.name}</div>
+                            <div class="upgrade-level">Level ${level}/${upgrade.max}</div>
+                        </div>
+                        <div class="upgrade-desc">${upgrade.desc}</div>
+                        <div class="upgrade-cost ${affordable ? 'affordable' : 'expensive'}">
+                            💰 Cost: $${cost}
+                        </div>
+                        <button class="btn-primary" onclick="upgradePart('${upgrade.key}')" style="width: 100%;">Upgrade</button>
+                    `;
+                }
+
+                grid.appendChild(card);
+            });
+        }
+
+        function updateStats() {
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = '';
+
+            const elapsed = Math.floor((Date.now() - gameState.sessionStartTime) / 1000);
+            const elapsedMinutes = (elapsed / 60).toFixed(1);
+
+            const stats = [
+                { label: 'Total Earned', value: `$${gameState.totalEarned.toLocaleString()}` },
+                { label: 'Current Money', value: `$${gameState.money.toLocaleString()}` },
+                { label: 'Pizzas Sold', value: gameState.pizzasSold },
+                { label: 'Pizzas Baked', value: gameState.totalPizzasBaked },
+                { label: 'Avg per Pizza', value: gameState.pizzasSold > 0 ? `$${(gameState.totalEarned / gameState.pizzasSold).toFixed(2)}` : '$0' },
+                { label: 'Total Bonuses', value: `$${gameState.totalBonusesEarned}` },
+                { label: 'Oven Level', value: `${gameState.ovenLevel}/6` },
+                { label: 'Workers', value: `${gameState.workers}/5` },
+                { label: 'Quality Level', value: `${gameState.qualityLevel}/5` },
+                { label: 'Marketing Level', value: `${gameState.marketingLevel}/5` },
+                { label: 'Storage Level', value: `${gameState.storageLevel}/4` },
+                { label: 'Time Played', value: `${elapsed}s (${elapsedMinutes}m)` },
+            ];
+
+            stats.forEach(stat => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.innerHTML = `
+                    <h3>${stat.label}</h3>
+                    <div class="value">${stat.value}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Pizza Stats
+            const pizzaStats = document.getElementById('pizzaStats');
+            pizzaStats.innerHTML = '';
+            Object.keys(pizzas).forEach(key => {
+                const pizza = pizzas[key];
+                const count = gameState.pizzaStats[key];
+                const item = document.createElement('div');
+                item.className = 'pizza-stat-item';
+                item.innerHTML = `
+                    <div class="pizza-stat-emoji">${pizza.emoji}</div>
+                    <div class="pizza-stat-name">${pizza.name}</div>
+                    <div class="pizza-stat-count">${count}</div>
+                `;
+                pizzaStats.appendChild(item);
+            });
+        }
+
+        function updateAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = '';
+
+            let unlocked = 0;
+            let totalReward = 0;
+
+            Object.keys(gameState.achievements).forEach(key => {
+                const achievement = gameState.achievements[key];
+                const card = document.createElement('div');
+                card.className = `achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+
+                const status = achievement.unlocked ? '🔓 UNLOCKED' : '🔒 LOCKED';
+                card.innerHTML = `
+                    <div class="achievement-header">
+                        <div class="achievement-name">${achievement.name}</div>
+                        <div class="achievement-status">${status}</div>
+                    </div>
+                    <div class="achievement-desc">${achievement.desc}</div>
+                    <div class="achievement-reward">Reward: $${achievement.reward}</div>
+                `;
+                grid.appendChild(card);
+
+                if (achievement.unlocked) {
+                    unlocked++;
+                    totalReward += achievement.reward;
+                }
+            });
+
+            document.getElementById('achievementProgress').textContent = `${unlocked}/10 Achievements Unlocked`;
+            document.getElementById('achievementRewards').textContent = `$${totalReward} Rewards`;
+        }
+
+        function gameLoop() {
+            if (!gameState.gameRunning) return;
+
+            if (!gameState.gamePaused) {
+                gameState.currentTime += 0.016; // ~60 FPS
+                checkDonePizzas();
+                renderGameScreen();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Event Listeners for Shop Button
+        document.addEventListener('click', (e) => {
+            if (e.target.onclick && e.target.onclick.toString().includes('shop')) {
+                updateShop();
+            }
+        });
+
+        // Initialize with intro screen
+        document.getElementById('introScreen').classList.add('active');
+
+        // Handle shop screen updates
+        const observer = new MutationObserver(() => {
+            if (document.getElementById('shop').classList.contains('active')) {
+                updateShop();
+            }
+            if (document.getElementById('stats').classList.contains('active')) {
+                updateStats();
+            }
+            if (document.getElementById('achievements').classList.contains('active')) {
+                updateAchievements();
+            }
+        });
+
+        observer.observe(document.querySelector('.container'), {
+            attributes: true,
+            subtree: true,
+            attributeFilter: ['class']
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && gameState.gameRunning) {
+                if (gameState.gamePaused) {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
