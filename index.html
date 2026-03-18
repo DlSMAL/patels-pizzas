@@ -1086,6 +1086,7 @@
             gameState.gameRunning = true;
             gameState.gamePaused = false;
 
+            renderPizzaMenu();
             renderGameScreen();
             showScreen('gameScreen');
             gameLoop();
@@ -1103,6 +1104,7 @@
                 gameState.gameRunning = true;
                 gameState.gamePaused = false;
                 gameState.sessionStartTime = Date.now();
+                renderPizzaMenu();
                 renderGameScreen();
                 showScreen('gameScreen');
                 gameLoop();
@@ -1210,6 +1212,7 @@
                 gameState.timesUpgraded++;
                 showNotification(`${part} upgraded to level ${gameState[`${part}Level`]}!`, 'success');
                 checkAchievements();
+                renderPizzaMenu();
                 renderGameScreen();
                 updateShop();
             } else {
@@ -1297,8 +1300,7 @@
             document.getElementById('pauseOverlay').classList.remove('active');
         }
 
-        function renderGameScreen() {
-            // Pizza Menu
+        function renderPizzaMenu() {
             const pizzaMenu = document.getElementById('pizzaMenu');
             pizzaMenu.innerHTML = '';
             Object.keys(pizzas).forEach(key => {
@@ -1319,7 +1321,9 @@
                 `;
                 pizzaMenu.appendChild(card);
             });
+        }
 
+        function renderGameScreen() {
             // Update stats
             document.getElementById('moneyDisplay').textContent = `$${gameState.money.toLocaleString()}`;
             document.getElementById('pizzasSoldDisplay').textContent = gameState.pizzasSold;
