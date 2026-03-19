@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+*.pyo
+.patels_pizzas_save.json
