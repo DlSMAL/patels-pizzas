@@ -1069,6 +1069,87 @@
                 flex-direction: column;
             }
         }
+
+        /* Cooking Frenzy Banner */
+        .frenzy-banner {
+            display: none;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            animation: frenzypulse 0.7s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .frenzy-banner.active {
+            display: block;
+        }
+
+        @keyframes frenzypulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            50% { transform: scale(1.015); box-shadow: 0 0 35px rgba(255, 107, 107, 0.8); }
+        }
+
+        /* Mr. Patel's Request Banner */
+        .patel-request-banner {
+            display: none;
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            border: 2px solid #ffd200;
+            box-shadow: 0 0 18px rgba(255, 210, 0, 0.5);
+            animation: patelRequestPulse 1.5s ease-in-out infinite;
+        }
+
+        .patel-request-banner.active {
+            display: block;
+        }
+
+        @keyframes patelRequestPulse {
+            0%, 100% { box-shadow: 0 0 18px rgba(255, 210, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 210, 0, 0.85); }
+        }
+
+        /* Highlighted pizza card for Mr. Patel's request */
+        .pizza-card-requested {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffd93d 50%, #ff6b6b 100%);
+            background-size: 200% 200%;
+            animation: requestedGlow 1s ease infinite;
+            border: 3px solid #ff6b6b !important;
+            box-shadow: 0 0 24px rgba(255, 107, 107, 0.7) !important;
+        }
+
+        .pizza-card-requested:hover {
+            border-color: #fff !important;
+            box-shadow: 0 12px 28px rgba(255, 107, 107, 0.8) !important;
+        }
+
+        @keyframes requestedGlow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .requested-badge {
+            display: inline-block;
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 2px 10px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -1206,10 +1287,18 @@
                     <li>Check achievements for rewards!</li>
                     <li>Sell lots of basic pizzas to unlock premium toppings for the builder</li>
                     <li>🌟 Bake <strong>Patel's Paneer</strong> to unlock the Paneer topping and earn a special achievement!</li>
+                    <li>🔥 <strong>Cooking Frenzy</strong> randomly activates every 45–90 seconds — order quickly for 2× speed!</li>
+                    <li>👑 <strong>Mr. Patel's Request</strong> appears every 60–120 seconds — bake his chosen pizza within 45s for double value!</li>
                 </ul>
 
                 <h3>🌟 MR. PATEL'S SPECIAL</h3>
-                <p style="margin-left: 20px; font-style: italic; color: #764ba2;">"I personally request you bake my signature Paneer pizza — available from the very first day. It's the pride of Patel's Pizzas!" — Mr. Patel</p>
+                <p style="margin-left: 20px; font-style: italic; color: #764ba2;">"I personally request you bake my signature Paneer pizza — available from the very first day. It's the pride of Patel's Pizzas!" — Mr. Patel (Aarav Patel)</p>
+
+                <h3>🔥 COOKING FRENZY</h3>
+                <p style="margin-left: 20px; color: #e05555;">Every 45–90 seconds, a <strong>Cooking Frenzy</strong> randomly breaks out — your oven runs at <strong>2× speed</strong> for 15 seconds! A flashing banner will warn you. Order as many pizzas as you can!</p>
+
+                <h3>👑 MR. PATEL'S REQUEST</h3>
+                <p style="margin-left: 20px; color: #b8860b;">Every 60–120 seconds, <strong>Aarav Patel</strong> personally requests a specific pizza. Fulfill it within <strong>45 seconds</strong> and you'll earn <strong>double the value</strong> for that pizza! The requested pizza glows orange in the menu.</p>
             </div>
             <button class="btn-primary" onclick="showScreen('mainMenu')" style="width: 100%;">Back to Menu</button>
         </div>
@@ -1234,6 +1323,9 @@
                     <div class="stat-value" id="timeDisplay">0s</div>
                 </div>
             </div>
+
+            <div class="frenzy-banner" id="frenzybanner">🔥 COOKING FRENZY! 2× Speed Active! <span id="frenzyTimer"></span></div>
+            <div class="patel-request-banner" id="patelRequestBanner">👑 Mr. Patel requests: <span id="patelRequestPizza"></span> for <strong>DOUBLE VALUE</strong>! ⏰ <span id="patelRequestTimer"></span>s left</div>
 
             <div class="pizza-menu" id="pizzaMenu"></div>
 
@@ -1407,6 +1499,11 @@
             totalBonusesEarned: 0,
             timesUpgraded: 0,
             sessionStartTime: 0,
+            cookingFrenzy: false,
+            cookingFrenzyEndTime: 0,
+            cookingFrenzyNextTime: 0,
+            patelRequest: { active: false, pizzaType: null, pizzaName: null, pizzaEmoji: null, endTime: 0 },
+            patelRequestNextTime: 0,
         };
 
         const pizzas = {
@@ -1520,6 +1617,11 @@
             gameState.sessionStartTime = Date.now();
             gameState.gameRunning = true;
             gameState.gamePaused = false;
+            gameState.cookingFrenzy = false;
+            gameState.cookingFrenzyEndTime = 0;
+            gameState.cookingFrenzyNextTime = 45 + Math.random() * 45;
+            gameState.patelRequest = { active: false, pizzaType: null, pizzaName: null, pizzaEmoji: null, endTime: 0 };
+            gameState.patelRequestNextTime = 60 + Math.random() * 60;
 
             renderPizzaMenu();
             renderGameScreen();
@@ -1540,6 +1642,18 @@
                 gameState.gameRunning = true;
                 gameState.gamePaused = false;
                 gameState.sessionStartTime = Date.now();
+                // Initialise new event fields for saves that pre-date these features
+                if (!gameState.cookingFrenzyNextTime) {
+                    gameState.cookingFrenzy = false;
+                    gameState.cookingFrenzyEndTime = 0;
+                    gameState.cookingFrenzyNextTime = gameState.currentTime + 45 + Math.random() * 45;
+                }
+                if (!gameState.patelRequest) {
+                    gameState.patelRequest = { active: false, pizzaType: null, pizzaName: null, pizzaEmoji: null, endTime: 0 };
+                }
+                if (!gameState.patelRequestNextTime) {
+                    gameState.patelRequestNextTime = gameState.currentTime + 60 + Math.random() * 60;
+                }
                 renderPizzaMenu();
                 renderGameScreen();
                 showScreen('gameScreen');
@@ -1562,7 +1676,12 @@
             baseTime = Math.max(2, baseTime);
 
             const diffMult = gameState.difficulty === 'easy' ? 0.8 : gameState.difficulty === 'hard' ? 1.2 : 1.0;
-            return baseTime * diffMult;
+            baseTime = baseTime * diffMult;
+
+            if (gameState.cookingFrenzy) {
+                baseTime = baseTime * 0.5;
+            }
+            return baseTime;
         }
 
         function startBakingPizza(pizzaType) {
@@ -1626,7 +1745,16 @@
                 // Loyalty program: chance of double earnings
                 const loyaltyChance = (gameState.loyaltyLevel - 1) * 0.05;
                 const doubled = Math.random() < loyaltyChance;
-                const total = (earnings + bonus + deliveryBonus) * (doubled ? 2 : 1);
+
+                // Mr. Patel's request: double value if this is the requested pizza
+                let patelDoubled = false;
+                if (gameState.patelRequest.active && pizza.type === gameState.patelRequest.pizzaType) {
+                    patelDoubled = true;
+                    gameState.patelRequest.active = false;
+                    renderPizzaMenu();
+                }
+
+                const total = (earnings + bonus + deliveryBonus) * (doubled ? 2 : 1) * (patelDoubled ? 2 : 1);
 
                 gameState.money += total;
                 gameState.totalEarned += total;
@@ -1637,8 +1765,9 @@
                 let msg = `${pizza.emoji} ${pizza.name} sold! (+$${total}`;
                 if (deliveryBonus > 0) msg += ` incl. $${deliveryBonus} delivery`;
                 if (doubled) msg += ' 🎁 DOUBLED!';
+                if (patelDoubled) msg += ' 👑 PATEL\'S REQUEST!';
                 msg += ')';
-                showNotification(msg, 'success');
+                showNotification(msg, patelDoubled ? 'warning' : 'success');
                 checkAchievements();
             });
         }
@@ -1784,14 +1913,17 @@
                 const card = document.createElement('div');
 
                 if (unlocked) {
-                    card.className = `pizza-card${pizza.patelSpecial ? ' pizza-card-patel-special' : ''}`;
+                    const isRequested = gameState.patelRequest.active && gameState.patelRequest.pizzaType === key;
+                    let cardClass = `pizza-card${pizza.patelSpecial ? ' pizza-card-patel-special' : ''}${isRequested ? ' pizza-card-requested' : ''}`;
+                    card.className = cardClass;
                     card.onclick = () => startBakingPizza(key);
                     card.innerHTML = `
-                        ${pizza.patelSpecial ? '<div class="patel-special-badge">👑 Mr. Patel\'s Request</div>' : ''}
+                        ${isRequested ? '<div class="requested-badge">👑 DOUBLE VALUE!</div>' : ''}
+                        ${pizza.patelSpecial && !isRequested ? '<div class="patel-special-badge">👑 Mr. Patel\'s Request</div>' : ''}
                         <div class="pizza-emoji">${pizza.emoji}</div>
                         <div class="pizza-name">${pizza.name}</div>
-                        <div class="pizza-price">💵 $${price}</div>
-                        <div class="pizza-time">⏱️ ${bakeTime.toFixed(1)}s</div>
+                        <div class="pizza-price">💵 $${price}${isRequested ? ' → $' + (price * 2) + ' 🔥' : ''}</div>
+                        <div class="pizza-time">⏱️ ${bakeTime.toFixed(1)}s${gameState.cookingFrenzy ? ' ⚡' : ''}</div>
                         <div class="pizza-difficulty">${difficulty}</div>
                     `;
                 } else {
@@ -1817,6 +1949,27 @@
             
             const elapsed = Math.floor((Date.now() - gameState.sessionStartTime) / 1000);
             document.getElementById('timeDisplay').textContent = `${elapsed}s`;
+
+            // Cooking Frenzy banner
+            const frenzybanner = document.getElementById('frenzybanner');
+            if (gameState.cookingFrenzy) {
+                frenzybanner.classList.add('active');
+                const frenzyLeft = Math.max(0, gameState.cookingFrenzyEndTime - gameState.currentTime);
+                document.getElementById('frenzyTimer').textContent = `(${frenzyLeft.toFixed(0)}s left)`;
+            } else {
+                frenzybanner.classList.remove('active');
+            }
+
+            // Mr. Patel's request banner
+            const patelBanner = document.getElementById('patelRequestBanner');
+            if (gameState.patelRequest.active) {
+                patelBanner.classList.add('active');
+                document.getElementById('patelRequestPizza').textContent = `${gameState.patelRequest.pizzaEmoji} ${gameState.patelRequest.pizzaName}`;
+                const patelLeft = Math.max(0, gameState.patelRequest.endTime - gameState.currentTime);
+                document.getElementById('patelRequestTimer').textContent = patelLeft.toFixed(0);
+            } else {
+                patelBanner.classList.remove('active');
+            }
 
             // Oven Display
             const ovenDisplay = document.getElementById('ovenDisplay');
@@ -2035,6 +2188,44 @@
             if (!gameState.gamePaused) {
                 gameState.currentTime += 0.016; // ~60 FPS
                 checkDonePizzas();
+
+                // ── Cooking Frenzy ──────────────────────────────────────────────
+                if (!gameState.cookingFrenzy && gameState.cookingFrenzyNextTime > 0 && gameState.currentTime >= gameState.cookingFrenzyNextTime) {
+                    gameState.cookingFrenzy = true;
+                    gameState.cookingFrenzyEndTime = gameState.currentTime + 15;
+                    gameState.cookingFrenzyNextTime = gameState.cookingFrenzyEndTime + 45 + Math.random() * 45;
+                    showNotification('🔥 COOKING FRENZY! 2× cooking speed for 15 seconds!', 'success', 4000);
+                    renderPizzaMenu();
+                }
+                if (gameState.cookingFrenzy && gameState.currentTime >= gameState.cookingFrenzyEndTime) {
+                    gameState.cookingFrenzy = false;
+                    showNotification('🔥 Cooking frenzy ended. Back to normal speed.', 'info', 2500);
+                    renderPizzaMenu();
+                }
+
+                // ── Mr. Patel's Special Request ─────────────────────────────────
+                if (!gameState.patelRequest.active && gameState.patelRequestNextTime > 0 && gameState.currentTime >= gameState.patelRequestNextTime) {
+                    const unlockedPizzas = Object.keys(pizzas).filter(k => pizzas[k].storageReq <= gameState.storageLevel);
+                    if (unlockedPizzas.length > 0) {
+                        const chosen = unlockedPizzas[Math.floor(Math.random() * unlockedPizzas.length)];
+                        gameState.patelRequest = {
+                            active: true,
+                            pizzaType: chosen,
+                            pizzaName: pizzas[chosen].name,
+                            pizzaEmoji: pizzas[chosen].emoji,
+                            endTime: gameState.currentTime + 45,
+                        };
+                        gameState.patelRequestNextTime = gameState.patelRequest.endTime + 60 + Math.random() * 60;
+                        showNotification(`👑 Mr. Patel requests: ${pizzas[chosen].emoji} ${pizzas[chosen].name}! Sell it for DOUBLE value! (45s)`, 'warning', 6000);
+                        renderPizzaMenu();
+                    }
+                }
+                if (gameState.patelRequest.active && gameState.currentTime >= gameState.patelRequest.endTime) {
+                    gameState.patelRequest.active = false;
+                    showNotification("⌛ Mr. Patel's request has expired.", 'info', 2500);
+                    renderPizzaMenu();
+                }
+
                 renderGameScreen();
             }
 
