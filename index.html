@@ -241,6 +241,37 @@
             box-shadow: none;
         }
 
+        .pizza-card-patel-special {
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 50%, #f7971e 100%);
+            background-size: 200% 200%;
+            animation: patelGlow 3s ease infinite;
+            border: 3px solid #ffd200;
+            box-shadow: 0 0 18px rgba(255, 210, 0, 0.5);
+        }
+
+        .pizza-card-patel-special:hover {
+            border-color: #fff;
+            box-shadow: 0 12px 28px rgba(255, 210, 0, 0.6);
+        }
+
+        @keyframes patelGlow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .patel-special-badge {
+            display: inline-block;
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 2px 10px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
         .pizza-lock-badge {
             font-size: 13px;
             color: #ffd89b;
@@ -789,6 +820,8 @@
             border-radius: 8px;
             animation: slideInLeft 0.3s ease;
             z-index: 900;
+            max-width: 380px;
+            line-height: 1.4;
         }
 
         @keyframes slideInLeft {
@@ -1172,7 +1205,11 @@
                     <li>Random bonuses appear frequently</li>
                     <li>Check achievements for rewards!</li>
                     <li>Sell lots of basic pizzas to unlock premium toppings for the builder</li>
+                    <li>🌟 Bake <strong>Patel's Paneer</strong> to unlock the Paneer topping and earn a special achievement!</li>
                 </ul>
+
+                <h3>🌟 MR. PATEL'S SPECIAL</h3>
+                <p style="margin-left: 20px; font-style: italic; color: #764ba2;">"I personally request you bake my signature Paneer pizza — available from the very first day. It's the pride of Patel's Pizzas!" — Mr. Patel</p>
             </div>
             <button class="btn-primary" onclick="showScreen('mainMenu')" style="width: 100%;">Back to Menu</button>
         </div>
@@ -1362,9 +1399,10 @@
                 pizza_chef: { name: 'Pizza Chef', desc: 'Make your first custom pizza', reward: 50, unlocked: false },
                 master_chef: { name: 'Master Chef', desc: 'Make 10 custom pizzas', reward: 250, unlocked: false },
                 topping_unlocked: { name: 'Topping Collector', desc: 'Unlock 5 premium toppings', reward: 150, unlocked: false },
+                patels_favourite: { name: "Patel's Favourite", desc: "Sell 5 of Mr. Patel's Paneer pizzas", reward: 175, unlocked: false },
             },
             pizzaStats: {
-                '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0
+                '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0, '11': 0
             },
             totalBonusesEarned: 0,
             timesUpgraded: 0,
@@ -1373,12 +1411,13 @@
 
         const pizzas = {
             // Storage Level 1 — starter recipes
-            '1': { name: 'Margherita',   baseTime: 8,  price: 12, difficulty: 1, emoji: '🍅', storageReq: 1 },
-            '2': { name: 'Pepperoni',    baseTime: 10, price: 15, difficulty: 2, emoji: '🌶️', storageReq: 1 },
+            '1': { name: 'Margherita',         baseTime: 8,  price: 12, difficulty: 1, emoji: '🍅', storageReq: 1 },
+            '2': { name: 'Pepperoni',           baseTime: 10, price: 15, difficulty: 2, emoji: '🌶️', storageReq: 1 },
+           '11': { name: "Patel's Paneer",      baseTime: 11, price: 19, difficulty: 2, emoji: '🌟', storageReq: 1, patelSpecial: true },
             // Storage Level 2 — basic expansion
-            '3': { name: 'Vegetarian',   baseTime: 9,  price: 14, difficulty: 2, emoji: '🥒', storageReq: 2 },
-            '6': { name: 'Hawaiian',     baseTime: 11, price: 18, difficulty: 2, emoji: '🍍', storageReq: 2 },
-            '8': { name: 'Four Cheese',  baseTime: 10, price: 16, difficulty: 2, emoji: '🧀', storageReq: 2 },
+            '3': { name: 'Vegetarian',          baseTime: 9,  price: 14, difficulty: 2, emoji: '🥒', storageReq: 2 },
+            '6': { name: 'Hawaiian',            baseTime: 11, price: 18, difficulty: 2, emoji: '🍍', storageReq: 2 },
+            '8': { name: 'Four Cheese',         baseTime: 10, price: 16, difficulty: 2, emoji: '🧀', storageReq: 2 },
             // Storage Level 3 — intermediate recipes
             '5': { name: 'BBQ Chicken',  baseTime: 12, price: 20, difficulty: 3, emoji: '🍗', storageReq: 3 },
             '4': { name: 'Supreme',      baseTime: 15, price: 25, difficulty: 3, emoji: '👑', storageReq: 3 },
@@ -1425,6 +1464,7 @@
             'pepperoni':   { name: 'Pepperoni',     emoji: '🔴', cost: 3,  value: 7,  tier: 2, unlockReq: { pizzaType: '2', amount: 5,  pizzaName: 'Pepperoni'   } },
             'bell_peppers':{ name: 'Bell Peppers',  emoji: '🫑', cost: 2,  value: 5,  tier: 2, unlockReq: { pizzaType: '3', amount: 5,  pizzaName: 'Vegetarian'  } },
             'onions':      { name: 'Onions',        emoji: '🧅', cost: 2,  value: 4,  tier: 2, unlockReq: { pizzaType: '1', amount: 10, pizzaName: 'Margherita'  } },
+            'paneer':      { name: 'Paneer',        emoji: '🧀', cost: 3,  value: 8,  tier: 2, unlockReq: { pizzaType: '11', amount: 3, pizzaName: "Patel's Paneer" } },
             // Tier 3 — require more sales of intermediate pizzas
             'jalapenos':   { name: 'Jalapeños',     emoji: '🌶', cost: 2,  value: 5,  tier: 3, unlockReq: { pizzaType: '2', amount: 15, pizzaName: 'Pepperoni'   } },
             'pineapple':   { name: 'Pineapple',     emoji: '🍍', cost: 2,  value: 6,  tier: 3, unlockReq: { pizzaType: '6', amount: 8,  pizzaName: 'Hawaiian'    } },
@@ -1471,7 +1511,7 @@
             gameState.timesUpgraded = 0;
             gameState.customPizzasMade = 0;
             gameState.customPizzasProfit = 0;
-            gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0 };
+            gameState.pizzaStats = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0, '7': 0, '8': 0, '9': 0, '10': 0, '11': 0 };
             
             Object.keys(gameState.achievements).forEach(key => {
                 gameState.achievements[key].unlocked = false;
@@ -1485,6 +1525,7 @@
             renderGameScreen();
             showScreen('gameScreen');
             gameLoop();
+            setTimeout(() => showNotification("👑 Mr. Patel says: \"Please make my Paneer Special — it's the best pizza in the house!\"", 'info', 5000), 800);
         }
 
         function saveGame() {
@@ -1659,6 +1700,9 @@
             if (gameState.pizzaStats['7'] >= 10 && !gameState.achievements.truffle_collector.unlocked) {
                 unlockAchievement('truffle_collector');
             }
+            if (gameState.pizzaStats['11'] >= 5 && !gameState.achievements.patels_favourite.unlocked) {
+                unlockAchievement('patels_favourite');
+            }
             if (gameState.customPizzasMade >= 1 && !gameState.achievements.pizza_chef.unlocked) {
                 unlockAchievement('pizza_chef');
             }
@@ -1695,14 +1739,14 @@
             setTimeout(() => popup.remove(), 3000);
         }
 
-        function showNotification(message, type = 'info') {
+        function showNotification(message, type = 'info', duration = 3000) {
             const container = document.getElementById('notificationContainer');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
             container.appendChild(notification);
 
-            setTimeout(() => notification.remove(), 3000);
+            setTimeout(() => notification.remove(), duration);
         }
 
         function pauseGame() {
@@ -1740,9 +1784,10 @@
                 const card = document.createElement('div');
 
                 if (unlocked) {
-                    card.className = 'pizza-card';
+                    card.className = `pizza-card${pizza.patelSpecial ? ' pizza-card-patel-special' : ''}`;
                     card.onclick = () => startBakingPizza(key);
                     card.innerHTML = `
+                        ${pizza.patelSpecial ? '<div class="patel-special-badge">👑 Mr. Patel\'s Request</div>' : ''}
                         <div class="pizza-emoji">${pizza.emoji}</div>
                         <div class="pizza-name">${pizza.name}</div>
                         <div class="pizza-price">💵 $${price}</div>
