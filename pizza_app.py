@@ -133,82 +133,140 @@ UPGRADE_MAX = {
 
 SAVE_FILE = os.path.join(os.path.expanduser("~"), ".patels_pizzas_save.json")
 
-# Colour palette
-C_BG       = "#1a0a00"     # very dark brown — main window bg
-C_WALL     = "#3B1A08"     # brick wall
-C_MORTAR   = "#5C3317"     # mortar / lighter brick
-C_BANNER   = "#8B0000"     # deep red banner
-C_GOLD     = "#FFD700"     # gold text
-C_GREEN    = "#4CAF50"     # success green
-C_CARD     = "#2d1a0a"     # card background
-C_COUNTER  = "#5C3317"     # wooden counter
-C_WHITE    = "#FFFFFF"
-C_GREY     = "#AAAAAA"
-C_DKGREY   = "#555555"
+# Colour palette — vibrant neon/space theme
+C_BG       = "#0a0a1a"     # very dark navy — main window bg
+C_WALL     = "#12122e"     # dark panel bg
+C_MORTAR   = "#1c1c3d"     # slightly lighter dark
+C_BANNER   = "#4c1d95"     # deep purple banner
+C_GOLD     = "#fbbf24"     # amber gold text
+C_GREEN    = "#22c55e"     # bright green
+C_CARD     = "#0d0d24"     # card background
+C_COUNTER  = "#2d1b69"     # deep purple counter
+C_WHITE    = "#e2e8f0"     # soft white
+C_GREY     = "#94a3b8"     # slate grey
+C_DKGREY   = "#334155"     # dark slate
+C_CORAL    = "#ff6b6b"     # accent coral
+C_BLUE     = "#3b82f6"     # accent blue
+C_TEAL     = "#14b8a6"     # accent teal
+C_PURPLE   = "#7c3aed"     # accent purple
+
+
+def _lighten_color(hex_color: str, amount: int = 35) -> str:
+    """Return a lightened version of a hex colour string."""
+    hex_color = hex_color.lstrip("#")
+    r = min(255, int(hex_color[0:2], 16) + amount)
+    g = min(255, int(hex_color[2:4], 16) + amount)
+    b = min(255, int(hex_color[4:6], 16) + amount)
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+# Phases for the 5 floating pizza emojis on the intro screen
+_FLOAT_PIZZA_DEFS = [
+    (0.08, 0.12, 0.0),
+    (0.92, 0.18, 1.4),
+    (0.04, 0.72, 2.7),
+    (0.96, 0.68, 0.9),
+    (0.50, 0.04, 2.1),
+]
+
+# Random seeds & counts for deterministic decorative elements
+_BG_STAR_SEED    = 99   # static star field in draw_restaurant_bg
+_INTRO_STAR_SEED = 42   # star field on the intro canvas
+_MAKING_STAR_SEED = 77  # star field on the pizza-making canvas
+_GRADIENT_SEGS   = 24   # horizontal segments used to simulate a gradient header
 
 
 # ─── Helper: draw restaurant background on a Canvas ──────────────────────────
 
 def draw_restaurant_bg(canvas: tk.Canvas, width: int, height: int,
                        title: str = "") -> None:
-    """Render a stylised restaurant background with bricks, lights and counter."""
+    """Render a neon-space pizzeria background with glowing orbs and star field."""
     canvas.delete("bg")
 
-    # ── Brick wall ──
-    brick_h, brick_w, gap = 26, 76, 3
-    for row in range(height // brick_h + 2):
-        shade = "#3D1A08" if row % 2 == 0 else "#421E0A"
-        offset = (brick_w // 2) if row % 2 else 0
-        for col in range(-1, width // brick_w + 2):
-            x1 = col * brick_w + offset
-            y1 = row * brick_h
-            x2 = x1 + brick_w - gap
-            y2 = y1 + brick_h - gap
-            canvas.create_rectangle(x1, y1, x2, y2,
-                                    fill=shade, outline="#2A0F04",
-                                    width=1, tags="bg")
+    # ── Dark base ──
+    canvas.create_rectangle(0, 0, width, height,
+                             fill="#0a0a1a", outline="", tags="bg")
 
-    # ── Wooden counter strip at the bottom ──
-    counter_y = height - 80
-    canvas.create_rectangle(0, counter_y, width, height,
-                             fill="#5C3317", outline="", tags="bg")
-    canvas.create_rectangle(0, counter_y - 6, width, counter_y + 4,
-                             fill="#7B4A1E", outline="", tags="bg")
-    for x in range(0, width, 20):
-        canvas.create_line(x, counter_y, x + 10, height,
-                           fill="#4A2810", width=1, tags="bg")
+    # ── Star field (deterministic random) ──
+    rng = random.Random(_BG_STAR_SEED)
+    for _ in range(70):
+        sx = rng.randint(0, width)
+        sy = rng.randint(0, height)
+        sr = rng.choice([1, 1, 1, 2])
+        col = rng.choice(["#ffffff", "#e2e8f0", "#bfdbfe", "#ddd6fe"])
+        canvas.create_oval(sx - sr, sy - sr, sx + sr, sy + sr,
+                           fill=col, outline="", tags="bg")
 
-    # ── Hanging light bulbs ──
-    for bx in range(80, width, 140):
-        canvas.create_line(bx, 0, bx, 44, fill="#C8A050", width=2, tags="bg")
-        canvas.create_oval(bx - 12, 34, bx + 12, 58,
-                           fill="#FFF8DC", outline="#C8A050",
+    # ── Ambient neon glow orbs ──
+    _orbs = [
+        (int(width * 0.12), int(height * 0.22), 100,
+         ["#1e1b4b", "#2e1065", "#3b0764", "#4c1d95", "#6d28d9"]),
+        (int(width * 0.88), int(height * 0.18), 85,
+         ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6"]),
+        (int(width * 0.75), int(height * 0.80), 75,
+         ["#052e16", "#064e3b", "#065f46", "#047857", "#059669"]),
+        (int(width * 0.25), int(height * 0.78), 65,
+         ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626"]),
+    ]
+    for ox, oy, or_, colors in _orbs:
+        step = max(1, or_ // len(colors))
+        for i, col in enumerate(colors):
+            r = or_ - i * step
+            canvas.create_oval(ox - r, oy - r, ox + r, oy + r,
+                                fill=col, outline="", tags="bg")
+
+    # ── Hanging neon lights ──
+    for bx in range(80, width, 150):
+        # Wire
+        canvas.create_line(bx, 0, bx, 42, fill="#a78bfa", width=2, tags="bg")
+        # Outer glow halos (concentric, lighter toward center)
+        for gr, gc in [(22, "#2e1065"), (15, "#4c1d95"), (10, "#7c3aed")]:
+            canvas.create_oval(bx - gr, 30, bx + gr, 30 + gr * 2,
+                               fill=gc, outline="", tags="bg")
+        # Bright bulb core
+        canvas.create_oval(bx - 7, 38, bx + 7, 52,
+                           fill="#ddd6fe", outline="#a78bfa",
                            width=2, tags="bg")
-        # glow halo
-        canvas.create_oval(bx - 26, 20, bx + 26, 72,
-                           outline="#C8A050", fill="", width=4, tags="bg")
 
-    # ── Small pizza oven silhouette (left) ──
-    ov_x, ov_y = 20, counter_y - 110
-    canvas.create_rectangle(ov_x, ov_y, ov_x + 80, counter_y - 8,
-                             fill="#222", outline="#444", width=2, tags="bg")
-    canvas.create_oval(ov_x + 8, ov_y + 8, ov_x + 72, ov_y + 50,
-                       fill="#FF4500", outline="#FF6600", width=2, tags="bg")
-    canvas.create_text(ov_x + 40, ov_y + 29, text="🔥",
-                       font=("Arial", 14), tags="bg")
-    canvas.create_text(ov_x + 40, counter_y - 18, text="OVEN",
-                       fill="#AAAAAA", font=("Arial", 8, "bold"), tags="bg")
+    # ── Neon counter strip at bottom ──
+    counter_y = height - 70
+    canvas.create_rectangle(0, counter_y, width, height,
+                             fill="#0f0f28", outline="", tags="bg")
+    # Glowing top edge of counter
+    for gw, gc in [(5, "#4c1d95"), (3, "#7c3aed"), (1, "#a78bfa")]:
+        canvas.create_line(0, counter_y - gw, width, counter_y - gw,
+                           fill=gc, width=gw, tags="bg")
 
-    # ── Title banner ──
+    # ── Neon oven silhouette ──
+    ov_x, ov_y = 18, counter_y - 115
+    canvas.create_rectangle(ov_x, ov_y, ov_x + 82, counter_y - 6,
+                             fill="#0d0d24", outline="#7c3aed",
+                             width=2, tags="bg")
+    # Inner oven door with glow rings
+    for gr, gc in [(28, "#7f1d1d"), (22, "#991b1b"), (16, "#dc2626"),
+                   (10, "#f97316"), (6, "#fbbf24")]:
+        canvas.create_oval(ov_x + 41 - gr, ov_y + 29 - gr,
+                           ov_x + 41 + gr, ov_y + 29 + gr,
+                           fill=gc, outline="", tags="bg")
+    canvas.create_text(ov_x + 41, ov_y + 29, text="🔥",
+                       font=("Arial", 13), tags="bg")
+    canvas.create_text(ov_x + 41, counter_y - 18, text="OVEN",
+                       fill="#a78bfa", font=("Arial", 8, "bold"), tags="bg")
+
+    # ── Neon title banner ──
     if title:
         bw, bh = min(480, width - 40), 56
         bx2 = (width - bw) // 2
         by2 = 10
-        canvas.create_rectangle(bx2, by2, bx2 + bw, by2 + bh,
-                                 fill="#8B0000", outline="#FFD700",
+        # Outer glow border
+        canvas.create_rectangle(bx2 - 4, by2 - 4, bx2 + bw + 4, by2 + bh + 4,
+                                 fill="", outline="#4c1d95",
                                  width=3, tags="bg")
+        canvas.create_rectangle(bx2, by2, bx2 + bw, by2 + bh,
+                                 fill="#0d0d24", outline="#7c3aed",
+                                 width=2, tags="bg")
         canvas.create_text(bx2 + bw // 2, by2 + bh // 2, text=title,
-                           fill="#FFD700", font=("Arial", 20, "bold"),
+                           fill="#fbbf24", font=("Arial", 20, "bold"),
                            tags="bg")
 
 
@@ -331,6 +389,13 @@ class PatelsPizzasApp:
         # Timer
         self._timer_job: str | None = None
 
+        # Intro animation state
+        self._intro_canvas: tk.Canvas | None = None
+        self._intro_anim_id: str | None = None
+        self._intro_float_items: list = []
+        self._header_phase: float = 0.0
+        self._header_anim_id: str | None = None
+
         # Bg canvas references (updated on resize)
         self._bg_canvas: dict[str, tk.Canvas] = {}
 
@@ -373,10 +438,21 @@ class PatelsPizzasApp:
         self._build_shop()
 
     def _show_screen(self, name: str) -> None:
+        # Stop intro animation when leaving intro
+        if name != "intro" and self._intro_anim_id is not None:
+            try:
+                self.root.after_cancel(self._intro_anim_id)
+            except Exception:
+                pass
+            self._intro_anim_id = None
+
         for s in self.screens.values():
             s.place_forget()
         self.screens[name].place(x=0, y=0, relwidth=1.0, relheight=1.0)
-        if name == "game":
+        if name == "intro":
+            # Restart intro animation
+            self._intro_anim_id = self.root.after(50, self._animate_intro)
+        elif name == "game":
             self._refresh_game()
         elif name == "custom":
             self._refresh_custom()
@@ -408,36 +484,151 @@ class PatelsPizzasApp:
     # ─────────────────────────────────────────────────────────────────────────
 
     def _build_intro(self) -> None:
-        frame = tk.Frame(self.root, bg=C_BG)
+        frame = tk.Frame(self.root, bg="#0a0a1a")
         self.screens["intro"] = frame
 
-        canvas = self._make_bg_canvas(frame, "🍕  PATEL'S PIZZAS  🍕")
+        # Full-screen animated canvas
+        c = tk.Canvas(frame, highlightthickness=0, bg="#0a0a1a")
+        c.pack(fill="both", expand=True)
+        self._intro_canvas = c
+        c.bind("<Configure>", self._on_intro_configure)
 
-        # Centred content overlay
-        overlay = tk.Frame(canvas, bg=C_CARD, bd=3, relief="ridge")
-        overlay.place(relx=0.5, rely=0.5, anchor="center")
+        # ── Centred overlay card ──
+        overlay = tk.Frame(c, bg=C_CARD, bd=0, relief="flat",
+                           highlightbackground=C_PURPLE,
+                           highlightthickness=2)
+        self._intro_overlay = overlay
+        # Will be repositioned by animation loop
+        self._intro_overlay_id = c.create_window(
+            575, 380, window=overlay, anchor="center", tags="overlay_win")
 
         tk.Label(overlay, text="🍕", font=("Segoe UI Emoji", 64),
-                 bg=C_CARD).pack(pady=(20, 4))
+                 bg=C_CARD).pack(pady=(24, 6))
         tk.Label(overlay, text="PATEL'S PIZZAS",
                  font=("Arial", 32, "bold"), bg=C_CARD, fg=C_GOLD).pack()
         tk.Label(overlay, text="Rizwan Waseem  ×  Ali Imran",
                  font=("Arial", 12), bg=C_CARD, fg=C_GREY).pack(pady=4)
         tk.Label(overlay, text="© 2026  All Rights Reserved",
-                 font=("Arial", 9), bg=C_CARD, fg="#666666").pack()
+                 font=("Arial", 9), bg=C_CARD, fg="#475569").pack()
 
         btn_f = tk.Frame(overlay, bg=C_CARD)
         btn_f.pack(pady=20)
 
         self._btn(btn_f, "🎮  Start New Game",
                   lambda: self._start_new_game(),
-                  bg="#C0392B").pack(fill="x", pady=4, padx=30)
+                  bg=C_PURPLE).pack(fill="x", pady=4, padx=30)
         self._btn(btn_f, "📂  Load Game",
-                  self._load_game, bg="#2980B9").pack(fill="x", pady=4, padx=30)
+                  self._load_game, bg=C_BLUE).pack(fill="x", pady=4, padx=30)
         self._btn(btn_f, "📖  How to Play",
-                  self._show_instructions, bg="#27AE60").pack(fill="x", pady=4, padx=30)
+                  self._show_instructions, bg=C_TEAL).pack(fill="x", pady=4, padx=30)
         self._btn(btn_f, "❌  Quit",
                   self.root.quit, bg=C_DKGREY).pack(fill="x", pady=4, padx=30)
+
+    def _on_intro_configure(self, event: tk.Event | None = None) -> None:
+        """Rebuild static intro decorations (stars, neon orbs) on resize."""
+        c = self._intro_canvas
+        if not c:
+            return
+        w = c.winfo_width() or 1150
+        h = c.winfo_height() or 760
+
+        c.delete("deco")
+
+        # Star field
+        rng = random.Random(_INTRO_STAR_SEED)
+        for _ in range(90):
+            sx = rng.randint(0, w)
+            sy = rng.randint(0, h)
+            sr = rng.choice([1, 1, 1, 2])
+            col = rng.choice(["#ffffff", "#e2e8f0", "#bfdbfe",
+                               "#ddd6fe", "#fbcfe8"])
+            c.create_oval(sx - sr, sy - sr, sx + sr, sy + sr,
+                          fill=col, outline="", tags="deco")
+
+        # Neon ambient orbs (gradient-simulated with concentric circles)
+        orb_defs = [
+            (w * 0.12, h * 0.22, 130,
+             ["#1e1b4b", "#2e1065", "#4c1d95", "#6d28d9", "#8b5cf6"]),
+            (w * 0.88, h * 0.18, 110,
+             ["#172554", "#1e3a8a", "#2563eb", "#3b82f6", "#60a5fa"]),
+            (w * 0.78, h * 0.82, 95,
+             ["#052e16", "#065f46", "#047857", "#10b981", "#34d399"]),
+            (w * 0.22, h * 0.80, 85,
+             ["#450a0a", "#991b1b", "#dc2626", "#ef4444", "#f87171"]),
+        ]
+        for ox, oy, or_, colors in orb_defs:
+            step = max(1, or_ // len(colors))
+            for i, col in enumerate(colors):
+                r = or_ - i * step
+                c.create_oval(ox - r, oy - r, ox + r, oy + r,
+                              fill=col, outline="", tags="deco")
+
+        # Floating pizza emojis (will be animated)
+        for item in self._intro_float_items:
+            try:
+                c.delete(item)
+            except tk.TclError:
+                pass
+        self._intro_float_items = []
+        for rel_x, rel_y, _ in _FLOAT_PIZZA_DEFS:
+            item = c.create_text(
+                w * rel_x, h * rel_y, text="🍕",
+                font=("Segoe UI Emoji", 26),
+                fill="#ffffff", tags=("deco", "float_pizza"),
+                stipple="gray50")
+            self._intro_float_items.append(item)
+
+        # Large background pizza (animated bounce)
+        c.delete("big_pizza")
+        c.create_text(w // 2, int(h * 0.25), text="🍕",
+                      font=("Segoe UI Emoji", 90),
+                      fill="#ffffff", tags=("deco", "big_pizza"),
+                      stipple="gray25")
+
+        # Reposition overlay
+        c.coords("overlay_win", w // 2, h // 2)
+
+    def _animate_intro(self) -> None:
+        """Animate the intro screen: bounce pizza, float emojis, pulse bg."""
+        c = self._intro_canvas
+        if c is None:
+            return
+        try:
+            if not c.winfo_exists():
+                return
+        except tk.TclError:
+            return
+
+        t = time.time()
+        w = c.winfo_width() or 1150
+        h = c.winfo_height() or 760
+
+        # Animate floating pizza emojis
+        for i, item in enumerate(self._intro_float_items):
+            try:
+                rel_x, rel_y, phase = _FLOAT_PIZZA_DEFS[i]
+                ny = h * rel_y + math.sin(t * 0.9 + phase) * 18
+                c.coords(item, w * rel_x, ny)
+            except (tk.TclError, IndexError):
+                pass
+
+        # Bounce large background pizza
+        items = c.find_withtag("big_pizza")
+        if items:
+            by = int(h * 0.25 + math.sin(t * 1.6) * 22)
+            c.coords(items[0], w // 2, by)
+
+        # Subtle background colour pulse (dark navy variants)
+        phase = t * 0.25
+        r_v = int(10 + 8 * abs(math.sin(phase)))
+        g_v = int(8 + 5 * abs(math.sin(phase + 1.2)))
+        b_v = int(26 + 20 * abs(math.sin(phase + 0.6)))
+        c.config(bg=f"#{r_v:02x}{g_v:02x}{b_v:02x}")
+
+        # Keep overlay centred
+        c.coords("overlay_win", w // 2, h // 2)
+
+        self._intro_anim_id = c.after(40, self._animate_intro)
 
     # ─────────────────────────────────────────────────────────────────────────
     # GAME SCREEN
@@ -447,28 +638,45 @@ class PatelsPizzasApp:
         frame = tk.Frame(self.root, bg=C_BG)
         self.screens["game"] = frame
 
-        # ── Top stats bar ──
-        top = tk.Frame(frame, bg=C_BANNER, pady=5)
-        top.pack(fill="x")
+        # ── Gradient top stats bar (canvas-based) ──
+        top_c = tk.Canvas(frame, height=50, highlightthickness=0, bg=C_BANNER)
+        top_c.pack(fill="x")
+        self._stats_canvas = top_c
+        top_c.bind("<Configure>",
+                   lambda e: self._draw_gradient_header(
+                       top_c, e.width, e.height))
 
-        self._lbl_money = self._stat_lbl(top, "💰 $100")
-        self._lbl_sold  = self._stat_lbl(top, "🍕 Sold: 0")
-        self._lbl_earned = self._stat_lbl(top, "📊 Earned: $0")
-        self._lbl_time  = self._stat_lbl(top, "⏱️ 0s")
+        # Stat labels rendered on top of the canvas gradient
+        stats_frame = tk.Frame(top_c, bg=C_BANNER)
+        top_c.create_window(0, 0, window=stats_frame, anchor="nw",
+                            tags="stats_win")
+        top_c.bind("<Configure>",
+                   lambda e, sf=stats_frame: (
+                       self._draw_gradient_header(top_c, e.width, e.height),
+                       top_c.coords("stats_win", 0, 0),
+                       sf.config(width=e.width)))
+
+        self._lbl_money  = self._stat_lbl(stats_frame, "💰 $100")
+        self._lbl_sold   = self._stat_lbl(stats_frame, "🍕 Sold: 0")
+        self._lbl_earned = self._stat_lbl(stats_frame, "📊 Earned: $0")
+        self._lbl_time   = self._stat_lbl(stats_frame, "⏱️ 0s")
 
         # ── Navigation bar ──
-        nav = tk.Frame(frame, bg="#1a0a00", pady=3)
+        nav = tk.Frame(frame, bg=C_BG, pady=4)
         nav.pack(fill="x")
 
         self._btn(nav, "🍕 Custom Pizza", self._open_custom,
-                  bg="#C0392B").pack(side="left", padx=4, pady=2)
+                  bg=C_CORAL).pack(side="left", padx=4, pady=2)
         self._btn(nav, "🏪 Shop", lambda: self._show_screen("shop"),
-                  bg="#2980B9").pack(side="left", padx=4, pady=2)
+                  bg=C_BLUE).pack(side="left", padx=4, pady=2)
         self._btn(nav, "💾 Save", self._save_game,
-                  bg="#27AE60").pack(side="left", padx=4, pady=2)
+                  bg=C_GREEN).pack(side="left", padx=4, pady=2)
         self._btn(nav, "🚪 Main Menu",
                   lambda: self._show_screen("intro"),
                   bg=C_DKGREY).pack(side="right", padx=4, pady=2)
+
+        # Separator
+        tk.Frame(frame, bg=C_PURPLE, height=2).pack(fill="x")
 
         # ── Body: menu (left) + oven panel (right) ──
         body = tk.Frame(frame, bg=C_BG)
@@ -497,20 +705,33 @@ class PatelsPizzasApp:
         vsb.pack(side="right", fill="y")
 
         # Right: oven status
-        right = tk.Frame(body, bg=C_MORTAR, bd=2, relief="ridge", width=300)
+        right = tk.Frame(body, bg=C_WALL, bd=0, relief="flat", width=300)
         right.pack(side="right", fill="y", padx=(8, 0))
         right.pack_propagate(False)
 
-        tk.Label(right, text="🔥  OVEN STATUS",
-                 font=("Arial", 13, "bold"),
-                 bg=C_MORTAR, fg=C_GOLD).pack(pady=8)
+        # Oven panel header with gradient
+        oven_hdr = tk.Canvas(right, height=40, bg=C_BANNER,
+                             highlightthickness=0)
+        oven_hdr.pack(fill="x")
+        oven_hdr.bind("<Configure>",
+                      lambda e: self._draw_gradient_header(
+                          oven_hdr, e.width, e.height))
+        oven_hdr.create_text(150, 20, text="🔥  OVEN STATUS",
+                             fill=C_GOLD, font=("Arial", 12, "bold"),
+                             tags="oven_title")
+        oven_hdr.bind("<Configure>",
+                      lambda e, oh=oven_hdr: (
+                          self._draw_gradient_header(oh, e.width, e.height),
+                          oh.coords("oven_title", e.width // 2, 20)))
 
         self._oven_labels: list[tk.Label] = []
         for i in range(6):
             lbl = tk.Label(right, text=f"Slot {i + 1}: Empty",
-                           font=("Arial", 10), bg=C_MORTAR, fg=C_GREY,
-                           relief="groove", padx=8, pady=6, anchor="w",
-                           wraplength=260)
+                           font=("Arial", 10), bg=C_WALL, fg=C_GREY,
+                           relief="flat", padx=8, pady=7, anchor="w",
+                           wraplength=260,
+                           highlightbackground=C_MORTAR,
+                           highlightthickness=1)
             lbl.pack(fill="x", padx=8, pady=3)
             self._oven_labels.append(lbl)
 
@@ -524,6 +745,9 @@ class PatelsPizzasApp:
         for w in self._menu_frame.winfo_children():
             w.destroy()
 
+        # Border accent colours cycle through pizza difficulties
+        diff_colors = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#a855f7"]
+
         storage = gs["storage_level"]
         for key, pizza in MENU_PIZZAS.items():
             if pizza["storage_req"] > storage:
@@ -532,10 +756,14 @@ class PatelsPizzasApp:
             price = self._pizza_price(pizza)
             can_afford = gs["money"] >= pizza["cost"]
             bake_t = self._bake_time(pizza["time"])
+            accent = diff_colors[(pizza["difficulty"] - 1) % len(diff_colors)]
 
-            card = tk.Frame(self._menu_frame, bg=C_CARD,
-                            relief="ridge", bd=2)
-            card.pack(fill="x", padx=4, pady=3)
+            # Outer wrapper for coloured left accent strip
+            wrapper = tk.Frame(self._menu_frame, bg=accent)
+            wrapper.pack(fill="x", padx=4, pady=3)
+
+            card = tk.Frame(wrapper, bg=C_CARD, padx=0, pady=0)
+            card.pack(fill="both", expand=True, padx=(3, 0))
 
             r1 = tk.Frame(card, bg=C_CARD)
             r1.pack(fill="x", padx=8, pady=(6, 2))
@@ -544,7 +772,8 @@ class PatelsPizzasApp:
                      font=("Arial", 12, "bold"),
                      bg=C_CARD, fg=C_GOLD).pack(side="left")
             tk.Label(r1, text=f"💰 ${price}",
-                     font=("Arial", 11), bg=C_CARD, fg="#4CAF50").pack(side="right")
+                     font=("Arial", 11, "bold"), bg=C_CARD,
+                     fg=C_GREEN).pack(side="right")
 
             r2 = tk.Frame(card, bg=C_CARD)
             r2.pack(fill="x", padx=8)
@@ -557,7 +786,7 @@ class PatelsPizzasApp:
             r3.pack(fill="x", padx=8, pady=(4, 6))
             self._btn(r3, f"🍕 Bake  (−${pizza['cost']})",
                       lambda k=key: self._bake_pizza(k),
-                      bg="#C0392B" if can_afford else C_DKGREY,
+                      bg=C_CORAL if can_afford else C_DKGREY,
                       state="normal" if can_afford else "disabled",
                       font=("Arial", 11, "bold")).pack(side="left")
 
@@ -571,7 +800,7 @@ class PatelsPizzasApp:
         for i, lbl in enumerate(self._oven_labels):
             if i >= cap:
                 lbl.config(text=f"Slot {i + 1}: 🔒 Locked",
-                           fg="#555555", bg="#1A0800", cursor="arrow")
+                           fg=C_DKGREY, bg=C_BG, cursor="arrow")
                 lbl.unbind("<Button-1>")
                 continue
 
@@ -583,18 +812,18 @@ class PatelsPizzasApp:
                     lbl.config(
                         text=f"Slot {i + 1}: {pizza['emoji']} {pizza['name']}"
                              f"  ({remaining:.0f}s left)",
-                        fg=C_GOLD, bg=C_MORTAR, cursor="arrow")
+                        fg=C_GOLD, bg=C_WALL, cursor="arrow")
                     lbl.unbind("<Button-1>")
                 else:
                     price = self._pizza_price(pizza)
                     lbl.config(
                         text=f"Slot {i + 1}: ✅ {pizza['name']}"
                              f"  — tap to sell ${price}",
-                        fg="#4CAF50", bg="#1A3A1A", cursor="hand2")
+                        fg=C_GREEN, bg="#0f2822", cursor="hand2")
                     lbl.bind("<Button-1>", lambda e, idx=i: self._sell_pizza(idx))
             else:
                 lbl.config(text=f"Slot {i + 1}: Empty",
-                           fg=C_GREY, bg=C_MORTAR, cursor="arrow")
+                           fg=C_GREY, bg=C_WALL, cursor="arrow")
                 lbl.unbind("<Button-1>")
 
     def _bake_pizza(self, key: str) -> None:
@@ -658,17 +887,31 @@ class PatelsPizzasApp:
         frame = tk.Frame(self.root, bg=C_BG)
         self.screens["custom"] = frame
 
-        # Header
-        hdr = tk.Frame(frame, bg=C_BANNER, pady=5)
-        hdr.pack(fill="x")
-        tk.Label(hdr, text="🍕  CUSTOM PIZZA BUILDER",
-                 font=("Arial", 15, "bold"), bg=C_BANNER, fg=C_GOLD).pack(side="left", padx=15)
+        # Gradient header
+        hdr_c = tk.Canvas(frame, height=50, highlightthickness=0, bg=C_BANNER)
+        hdr_c.pack(fill="x")
+        hdr_c.bind("<Configure>",
+                   lambda e: self._draw_gradient_header(
+                       hdr_c, e.width, e.height))
+        hdr_win = tk.Frame(hdr_c, bg=C_BANNER)
+        hdr_c.create_window(0, 0, window=hdr_win, anchor="nw",
+                            tags="hdr_content")
+        hdr_c.bind("<Configure>",
+                   lambda e, hw=hdr_win, hc=hdr_c: (
+                       self._draw_gradient_header(hc, e.width, e.height),
+                       hw.config(width=e.width)))
+
+        tk.Label(hdr_win, text="🍕  CUSTOM PIZZA BUILDER",
+                 font=("Arial", 15, "bold"), bg=C_BANNER,
+                 fg=C_GOLD).pack(side="left", padx=15, pady=10)
         self._lbl_builder_money = tk.Label(
-            hdr, text="💰 $100", font=("Arial", 13, "bold"),
-            bg=C_BANNER, fg="#4CAF50")
+            hdr_win, text="💰 $100", font=("Arial", 13, "bold"),
+            bg=C_BANNER, fg=C_GREEN)
         self._lbl_builder_money.pack(side="right", padx=15)
-        self._btn(hdr, "← Back", lambda: self._show_screen("game"),
-                  bg=C_DKGREY).pack(side="right", padx=6, pady=2)
+        self._btn(hdr_win, "← Back", lambda: self._show_screen("game"),
+                  bg=C_DKGREY).pack(side="right", padx=6, pady=6)
+
+        tk.Frame(frame, bg=C_PURPLE, height=2).pack(fill="x")
 
         # Body: left = options, right = live pizza preview
         body = tk.Frame(frame, bg=C_BG)
@@ -702,18 +945,18 @@ class PatelsPizzasApp:
         # Pizza preview canvas
         self._preview_canvas = tk.Canvas(
             right, width=340, height=340,
-            bg="#2D1A0A", highlightthickness=3,
-            highlightbackground=C_GOLD)
+            bg="#0a0a1a", highlightthickness=3,
+            highlightbackground=C_PURPLE)
         self._preview_canvas.pack(pady=4)
 
         # Cost info
         cost_f = tk.Frame(right, bg=C_BG)
         cost_f.pack(fill="x", padx=10, pady=4)
         self._lbl_cost   = tk.Label(cost_f, text="Cost: $0",
-                                    font=("Arial", 11), bg=C_BG, fg="#E74C3C")
+                                    font=("Arial", 11), bg=C_BG, fg=C_CORAL)
         self._lbl_cost.pack()
         self._lbl_value  = tk.Label(cost_f, text="Sell Value: $0",
-                                    font=("Arial", 11), bg=C_BG, fg="#4CAF50")
+                                    font=("Arial", 11), bg=C_BG, fg=C_GREEN)
         self._lbl_value.pack()
         self._lbl_profit = tk.Label(cost_f, text="Profit: $0",
                                     font=("Arial", 12, "bold"), bg=C_BG,
@@ -724,7 +967,7 @@ class PatelsPizzasApp:
             right, "🍕  Make My Pizza!",
             self._start_making,
             font=("Arial", 13, "bold"),
-            bg="#C0392B", pady=10)
+            bg=C_PURPLE, pady=10)
         self._btn_make.pack(fill="x", padx=10, pady=8)
 
     def _refresh_custom(self) -> None:
@@ -792,7 +1035,7 @@ class PatelsPizzasApp:
                 label = (f"{t['emoji']} {t['name']}\n"
                          f"🔒 {progress}/{req.get('amount', '?')}")
                 tk.Button(row_f, text=label,
-                          font=("Arial", 8), bg="#222222", fg="#555555",
+                          font=("Arial", 8), bg=C_BG, fg=C_DKGREY,
                           relief="flat", width=10, wraplength=80,
                           justify="center", state="disabled",
                           pady=4).pack(side="left", padx=2, pady=1)
@@ -807,7 +1050,7 @@ class PatelsPizzasApp:
         self._lbl_value.config(text=f"Sell Value: ${value}")
         self._lbl_profit.config(
             text=f"Profit: {'+' if profit >= 0 else ''}{profit}",
-            fg="#4CAF50" if profit >= 0 else "#E74C3C")
+            fg=C_GREEN if profit >= 0 else C_CORAL)
 
         can_make = gs["money"] >= cost and len(self.custom_state["toppings"]) > 0
         if not can_make:
@@ -817,7 +1060,7 @@ class PatelsPizzasApp:
         else:
             self._btn_make.config(
                 text=f"🍕  Make My Pizza!  (−${cost})",
-                state="normal", bg="#C0392B")
+                state="normal", bg=C_PURPLE)
 
         # Live pizza preview
         self._draw_preview()
@@ -825,7 +1068,7 @@ class PatelsPizzasApp:
     def _draw_preview(self) -> None:
         c = self._preview_canvas
         c.delete("all")
-        c.create_rectangle(0, 0, 340, 340, fill="#2D1A0A", outline="")
+        c.create_rectangle(0, 0, 340, 340, fill="#0a0a1a", outline="")
         draw_pizza(c, 170, 170, 130,
                    self.custom_state["base"],
                    self.custom_state["sauce"],
@@ -888,11 +1131,21 @@ class PatelsPizzasApp:
         frame = tk.Frame(self.root, bg=C_BG)
         self.screens["making"] = frame
 
-        # Header
-        hdr = tk.Frame(frame, bg=C_BANNER, pady=8)
-        hdr.pack(fill="x")
-        tk.Label(hdr, text="👨‍🍳  WATCH YOUR PIZZA BEING MADE!",
-                 font=("Arial", 16, "bold"), bg=C_BANNER, fg=C_GOLD).pack()
+        # Gradient header
+        hdr_c = tk.Canvas(frame, height=50, highlightthickness=0, bg=C_BANNER)
+        hdr_c.pack(fill="x")
+        hdr_c.bind("<Configure>",
+                   lambda e: self._draw_gradient_header(
+                       hdr_c, e.width, e.height))
+        hdr_c.create_text(0, 25, anchor="w", tags="hdr_txt",
+                          text="👨‍🍳  WATCH YOUR PIZZA BEING MADE!",
+                          fill=C_GOLD, font=("Arial", 16, "bold"))
+        hdr_c.bind("<Configure>",
+                   lambda e, hc=hdr_c: (
+                       self._draw_gradient_header(hc, e.width, e.height),
+                       hc.coords("hdr_txt", e.width // 2, 25),
+                       hc.itemconfig("hdr_txt", anchor="center")))
+        tk.Frame(frame, bg=C_PURPLE, height=2).pack(fill="x")
 
         # Body
         body = tk.Frame(frame, bg=C_BG)
@@ -904,8 +1157,8 @@ class PatelsPizzasApp:
 
         self._making_canvas = tk.Canvas(
             left, width=420, height=420,
-            bg="#2D1A0A", highlightthickness=3,
-            highlightbackground=C_GOLD)
+            bg="#0a0a1a", highlightthickness=3,
+            highlightbackground=C_PURPLE)
         self._making_canvas.pack(pady=8)
 
         self._lbl_step = tk.Label(
@@ -921,7 +1174,8 @@ class PatelsPizzasApp:
         self._progress.pack(fill="x")
 
         # RIGHT — details panel
-        right = tk.Frame(body, bg=C_CARD, bd=2, relief="ridge", width=290)
+        right = tk.Frame(body, bg=C_CARD, bd=0, relief="flat", width=290,
+                         highlightbackground=C_PURPLE, highlightthickness=2)
         right.pack(side="right", fill="y", padx=(14, 0))
         right.pack_propagate(False)
 
@@ -935,7 +1189,7 @@ class PatelsPizzasApp:
 
         self._lbl_result = tk.Label(
             right, text="", font=("Arial", 14, "bold"),
-            bg=C_CARD, fg="#4CAF50", wraplength=260)
+            bg=C_CARD, fg=C_GREEN, wraplength=260)
         self._lbl_result.pack(padx=12, pady=20)
 
     def _start_making(self) -> None:
@@ -1011,13 +1265,25 @@ class PatelsPizzasApp:
         # Draw pizza state
         c = self._making_canvas
         c.delete("all")
-        c.create_rectangle(0, 0, 420, 420, fill="#2D1A0A", outline="")
+        c.create_rectangle(0, 0, 420, 420, fill="#0a0a1a", outline="")
+
+        # Draw star field in background
+        rng2 = random.Random(_MAKING_STAR_SEED)
+        for _ in range(30):
+            sx = rng2.randint(0, 420)
+            sy = rng2.randint(0, 420)
+            c.create_oval(sx - 1, sy - 1, sx + 1, sy + 1,
+                          fill="#334155", outline="")
 
         cx, cy, r = 210, 200, 155
-        # wooden board
-        c.create_oval(cx - r - 18, cy - r - 18, cx + r + 18, cy + r + 18,
-                      fill="#6B4226", outline="#4A2E18", width=3)
-        c.create_oval(cx - r - 14, cy - r - 14, cx + r + 14, cy + r + 14,
+        # Dark board with neon rim
+        for gr, gc in [(r + 22, "#1e1b4b"), (r + 16, "#2e1065"),
+                       (r + 10, "#4c1d95"), (r + 4, "#7c3aed")]:
+            c.create_oval(cx - gr, cy - gr, cx + gr, cy + gr,
+                          fill=gc, outline="")
+        c.create_oval(cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2,
+                      fill="#6B4226", outline="")
+        c.create_oval(cx - r, cy - r, cx + r, cy + r,
                       fill="#8B5A2B", outline="")
 
         base_obj = next(b for b in PIZZA_BASES
@@ -1088,12 +1354,17 @@ class PatelsPizzasApp:
 
         self._lbl_result.config(
             text=f"🎉 Sold for ${sv}!\nProfit: {'+' if profit >= 0 else ''}{profit}",
-            fg="#4CAF50" if profit >= 0 else "#E74C3C")
+            fg=C_GREEN if profit >= 0 else C_CORAL)
 
         # Draw the final baked pizza
         c = self._making_canvas
         c.delete("all")
-        c.create_rectangle(0, 0, 420, 420, fill="#2D1A0A", outline="")
+        c.create_rectangle(0, 0, 420, 420, fill="#0a0a1a", outline="")
+        # Victory glow rings
+        for gr, gc in [(165, "#1e1b4b"), (175, "#2e1065"),
+                       (182, "#4c1d95"), (188, "#7c3aed"), (192, "#a855f7")]:
+            c.create_oval(210 - gr, 200 - gr, 210 + gr, 200 + gr,
+                          outline=gc, fill="", width=2)
         draw_pizza(c, 210, 200, 155,
                    self.custom_state["base"],
                    self.custom_state["sauce"],
@@ -1102,7 +1373,7 @@ class PatelsPizzasApp:
         c.create_text(210, 22, text="⭐  PERFECT!  ⭐",
                       fill=C_GOLD, font=("Arial", 16, "bold"))
         c.create_text(210, 390, text=f"💰 Sold for ${sv}!",
-                      fill="#4CAF50", font=("Arial", 12, "bold"))
+                      fill=C_GREEN, font=("Arial", 12, "bold"))
 
         self.root.after(2600, self._after_making)
 
@@ -1120,17 +1391,32 @@ class PatelsPizzasApp:
         frame = tk.Frame(self.root, bg=C_BG)
         self.screens["shop"] = frame
 
-        hdr = tk.Frame(frame, bg=C_BANNER, pady=5)
-        hdr.pack(fill="x")
-        tk.Label(hdr, text="🏪  UPGRADE SHOP",
-                 font=("Arial", 16, "bold"), bg=C_BANNER, fg=C_GOLD).pack(side="left", padx=15)
+        # Gradient header
+        hdr_c = tk.Canvas(frame, height=50, highlightthickness=0, bg=C_BANNER)
+        hdr_c.pack(fill="x")
+        hdr_c.bind("<Configure>",
+                   lambda e: self._draw_gradient_header(
+                       hdr_c, e.width, e.height))
+        hdr_win = tk.Frame(hdr_c, bg=C_BANNER)
+        hdr_c.create_window(0, 0, window=hdr_win, anchor="nw",
+                            tags="shop_hdr_content")
+        hdr_c.bind("<Configure>",
+                   lambda e, hw=hdr_win, hc=hdr_c: (
+                       self._draw_gradient_header(hc, e.width, e.height),
+                       hw.config(width=e.width)))
+
+        tk.Label(hdr_win, text="🏪  UPGRADE SHOP",
+                 font=("Arial", 16, "bold"), bg=C_BANNER,
+                 fg=C_GOLD).pack(side="left", padx=15, pady=10)
         self._lbl_shop_money = tk.Label(
-            hdr, text="💰 $100", font=("Arial", 13, "bold"),
-            bg=C_BANNER, fg="#4CAF50")
+            hdr_win, text="💰 $100", font=("Arial", 13, "bold"),
+            bg=C_BANNER, fg=C_GREEN)
         self._lbl_shop_money.pack(side="right", padx=15)
-        self._btn(hdr, "← Back to Game",
+        self._btn(hdr_win, "← Back to Game",
                   lambda: self._show_screen("game"),
-                  bg=C_DKGREY).pack(side="right", padx=6, pady=2)
+                  bg=C_DKGREY).pack(side="right", padx=6, pady=6)
+
+        tk.Frame(frame, bg=C_PURPLE, height=2).pack(fill="x")
 
         shop_canvas = tk.Canvas(frame, bg=C_BG, highlightthickness=0)
         ssb = ttk.Scrollbar(frame, orient="vertical",
@@ -1164,6 +1450,10 @@ class PatelsPizzasApp:
         for w in inner.winfo_children():
             w.destroy()
 
+        # Upgrade card accent colours per category
+        upgrade_accents = ["#f59e0b", "#3b82f6", "#22c55e", "#ec4899",
+                           "#a855f7", "#14b8a6", "#ff6b6b", "#fbbf24"]
+
         row_f: tk.Frame | None = None
         for idx, (key, name, desc) in enumerate(self.UPGRADES):
             if idx % 2 == 0:
@@ -1172,10 +1462,14 @@ class PatelsPizzasApp:
 
             level   = gs.get(f"{key}_level", 1)
             max_lv  = UPGRADE_MAX[key]
+            accent  = upgrade_accents[idx % len(upgrade_accents)]
 
-            card = tk.Frame(row_f, bg=C_CARD, relief="ridge", bd=2,
-                            padx=12, pady=10)
-            card.pack(side="left", fill="both", expand=True, padx=4)
+            # Outer wrapper for coloured left border
+            wrap = tk.Frame(row_f, bg=accent)
+            wrap.pack(side="left", fill="both", expand=True, padx=4)
+
+            card = tk.Frame(wrap, bg=C_CARD, padx=12, pady=10)
+            card.pack(fill="both", expand=True, padx=(3, 0))
 
             tk.Label(card, text=name, font=("Arial", 12, "bold"),
                      bg=C_CARD, fg=C_GOLD).pack(anchor="w")
@@ -1196,7 +1490,7 @@ class PatelsPizzasApp:
                     card,
                     f"Upgrade  —  ${cost}",
                     lambda k=key, c=cost: self._upgrade(k, c),
-                    bg="#27AE60" if affordable else C_DKGREY,
+                    bg=C_GREEN if affordable else C_DKGREY,
                     state="normal" if affordable else "disabled",
                 ).pack(pady=4)
 
@@ -1326,33 +1620,68 @@ class PatelsPizzasApp:
     # UI HELPERS
     # ─────────────────────────────────────────────────────────────────────────
 
+    def _draw_gradient_header(self, canvas: tk.Canvas,
+                              width: int, height: int) -> None:
+        """Paint a horizontal purple→blue gradient on a header canvas."""
+        canvas.delete("grad_bg")
+        if width <= 0:
+            return
+        n = _GRADIENT_SEGS
+        # Interpolate #4c1d95 → #1e3a8a  (purple to navy-blue)
+        r1, g1, b1 = 0x4c, 0x1d, 0x95
+        r2, g2, b2 = 0x1e, 0x3a, 0x8a
+        for i in range(n):
+            t = i / n
+            r = int(r1 + (r2 - r1) * t)
+            g = int(g1 + (g2 - g1) * t)
+            b = int(b1 + (b2 - b1) * t)
+            x1 = int(i * width / n)
+            x2 = int((i + 1) * width / n) + 1
+            canvas.create_rectangle(x1, 0, x2, height,
+                                    fill=f"#{r:02x}{g:02x}{b:02x}",
+                                    outline="", tags="grad_bg")
+        # Subtle bottom highlight line
+        canvas.create_line(0, height - 1, width, height - 1,
+                           fill=C_PURPLE, width=2, tags="grad_bg")
+
     def _btn(self, parent: tk.Widget, text: str, command,
              bg: str = C_BANNER, fg: str = C_WHITE,
              font: tuple = ("Arial", 11),
              state: str = "normal",
              pady: int = 5) -> tk.Button:
-        return tk.Button(parent, text=text, command=command,
-                         font=font, bg=bg, fg=fg,
-                         relief="flat", padx=12, pady=pady,
-                         cursor="hand2" if state == "normal" else "arrow",
-                         activebackground=bg,
-                         state=state)
+        hover_bg = _lighten_color(bg, 30)
+        btn = tk.Button(parent, text=text, command=command,
+                        font=font, bg=bg, fg=fg,
+                        relief="flat", padx=12, pady=pady,
+                        cursor="hand2" if state == "normal" else "arrow",
+                        activebackground=hover_bg,
+                        state=state)
+        if state == "normal":
+            btn.bind("<Enter>",
+                     lambda e, b=btn, hbg=hover_bg: b.config(bg=hbg))
+            btn.bind("<Leave>",
+                     lambda e, b=btn, nbg=bg: b.config(bg=nbg))
+        return btn
 
     def _opt_btn(self, parent: tk.Widget, text: str, command,
                  selected: bool = False, width: int = 11) -> tk.Button:
-        bg = C_GOLD if selected else "#3D1A08"
-        fg = "#1A0A00" if selected else C_WHITE
-        return tk.Button(parent, text=text, command=command,
-                         font=("Arial", 9), bg=bg, fg=fg,
-                         relief="flat", padx=5, pady=5,
-                         cursor="hand2", width=width,
-                         wraplength=88, justify="center",
-                         activebackground=C_GOLD)
+        bg = C_GOLD if selected else C_MORTAR
+        fg = C_BG if selected else C_WHITE
+        hover_bg = _lighten_color(bg, 25)
+        btn = tk.Button(parent, text=text, command=command,
+                        font=("Arial", 9), bg=bg, fg=fg,
+                        relief="flat", padx=5, pady=5,
+                        cursor="hand2", width=width,
+                        wraplength=88, justify="center",
+                        activebackground=hover_bg)
+        btn.bind("<Enter>", lambda e, b=btn, hbg=hover_bg: b.config(bg=hbg))
+        btn.bind("<Leave>", lambda e, b=btn, nbg=bg: b.config(bg=nbg))
+        return btn
 
     def _stat_lbl(self, parent: tk.Widget, text: str) -> tk.Label:
         lbl = tk.Label(parent, text=text, font=("Arial", 12, "bold"),
                        bg=C_BANNER, fg=C_GOLD)
-        lbl.pack(side="left", padx=18)
+        lbl.pack(side="left", padx=18, pady=6)
         return lbl
 
     def _section_header(self, parent: tk.Widget, text: str) -> None:
@@ -1361,24 +1690,40 @@ class PatelsPizzasApp:
             anchor="w", padx=10, pady=(12, 4))
 
     def _toast(self, message: str, duration: int = 2800) -> None:
-        """Show a temporary popup notification."""
+        """Show a styled popup notification at the bottom of the window."""
+        # Pick colours based on message content
+        if any(s in message for s in ("✅", "💾", "📂")):
+            bg_col, fg_col, border = "#052e16", "#4ade80", "#22c55e"
+        elif "🎉" in message or "DOUBLED" in message:
+            bg_col, fg_col, border = "#1e1b4b", "#a78bfa", "#7c3aed"
+        elif any(s in message for s in ("❌", "⚠️")):
+            bg_col, fg_col, border = "#450a0a", "#f87171", "#ef4444"
+        else:
+            bg_col, fg_col, border = "#0f172a", "#94a3b8", "#334155"
+
         toast = tk.Toplevel(self.root)
         toast.overrideredirect(True)
         toast.attributes("-topmost", True)
-        lbl = tk.Label(toast, text=message,
+
+        # Border frame
+        outer = tk.Frame(toast, bg=border, padx=2, pady=2)
+        outer.pack()
+        lbl = tk.Label(outer, text=message,
                        font=("Arial", 11, "bold"),
-                       bg="#1A3A1A", fg="#4CAF50",
-                       padx=18, pady=10)
+                       bg=bg_col, fg=fg_col,
+                       padx=20, pady=12)
         lbl.pack()
+
         self.root.update_idletasks()
         rw = self.root.winfo_width()
         rh = self.root.winfo_height()
         rx = self.root.winfo_x()
         ry = self.root.winfo_y()
-        tw = lbl.winfo_reqwidth() + 36
-        th = lbl.winfo_reqheight() + 20
-        toast.geometry(f"{tw}x{th}+{rx + (rw - tw) // 2}+{ry + rh - th - 70}")
+        tw = lbl.winfo_reqwidth() + 44
+        th = lbl.winfo_reqheight() + 24
+        toast.geometry(f"{tw}x{th}+{rx + (rw - tw) // 2}+{ry + rh - th - 80}")
         toast.after(duration, toast.destroy)
+
 
 
 # ─── Entry Point ──────────────────────────────────────────────────────────────
