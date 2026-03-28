@@ -1150,6 +1150,177 @@
             margin-bottom: 6px;
             letter-spacing: 0.5px;
         }
+
+        /* Admin Mode */
+        .btn-admin {
+            background: #343a40;
+            color: #adb5bd;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn-admin:hover {
+            background: #495057;
+            color: #fff;
+        }
+
+        .admin-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-modal-overlay.active {
+            display: flex;
+        }
+
+        .admin-modal {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            border-radius: 15px;
+            padding: 40px;
+            min-width: 340px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .admin-modal h2 {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .admin-modal input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            background: #0d0d1a;
+            color: #fff;
+            font-size: 15px;
+            margin-bottom: 15px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .admin-modal input[type="password"]:focus {
+            border-color: #ff6b6b;
+        }
+
+        .admin-modal .admin-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-bottom: 10px;
+            min-height: 20px;
+        }
+
+        .admin-panel-screen {
+            background: #0d0d1a;
+            color: #e0e0e0;
+        }
+
+        .admin-panel-screen h1 {
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .admin-section {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+        }
+
+        .admin-section h3 {
+            color: #adb5bd;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .admin-btn-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-admin-action {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-admin-action.green  { background: #28a745; color: #fff; }
+        .btn-admin-action.green:hover  { background: #218838; }
+        .btn-admin-action.blue   { background: #007bff; color: #fff; }
+        .btn-admin-action.blue:hover   { background: #0069d9; }
+        .btn-admin-action.orange { background: #fd7e14; color: #fff; }
+        .btn-admin-action.orange:hover { background: #e96b0a; }
+        .btn-admin-action.red    { background: #dc3545; color: #fff; }
+        .btn-admin-action.red:hover    { background: #c82333; }
+        .btn-admin-action.purple { background: #764ba2; color: #fff; }
+        .btn-admin-action.purple:hover { background: #5e3a82; }
+
+        .admin-money-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .admin-money-input-row input {
+            flex: 1;
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            background: #0d0d1a;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .admin-money-input-row input:focus {
+            border-color: #28a745;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: #ff6b6b;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-left: 6px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -1230,6 +1401,9 @@
                 <button class="btn-info" onclick="loadGame()" style="padding: 15px;">📂 Load Game</button>
                 <button class="btn-secondary" onclick="showScreen('instructions')" style="padding: 15px;">📖 How to Play</button>
                 <button class="btn-danger" onclick="location.reload()" style="padding: 15px;">❌ Quit Game</button>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn-admin" onclick="openAdminLogin()">🔒 Admin</button>
             </div>
         </div>
 
@@ -1418,6 +1592,72 @@
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="btn-danger" id="makePizzaBtn" onclick="startMakingCustomPizza()" style="flex:1; padding:15px; font-size:18px;">🍕 Make My Pizza!</button>
                 <button class="btn-primary" onclick="showScreen('gameScreen')" style="flex:1; padding:15px;">← Back to Game</button>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL SCREEN -->
+        <div class="screen admin-panel-screen" id="adminPanel">
+            <h1>🔧 Admin Panel <span class="admin-badge">ADMIN</span></h1>
+
+            <div class="admin-section">
+                <h3>💰 Money</h3>
+                <div class="admin-btn-row" style="margin-bottom: 10px;">
+                    <button class="btn-admin-action green" onclick="adminAddMoney(1000)">+$1,000</button>
+                    <button class="btn-admin-action green" onclick="adminAddMoney(10000)">+$10,000</button>
+                    <button class="btn-admin-action green" onclick="adminAddMoney(100000)">+$100,000</button>
+                </div>
+                <div class="admin-money-input-row">
+                    <input type="number" id="adminCustomAmount" min="1" placeholder="Custom amount..." />
+                    <button class="btn-admin-action green" onclick="adminAddCustomMoney()">Add</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🔧 Upgrades</h3>
+                <div class="admin-btn-row">
+                    <button class="btn-admin-action blue" onclick="adminMaxAllUpgrades()">⬆️ Max All Upgrades</button>
+                    <button class="btn-admin-action red" onclick="adminResetUpgrades()">↩️ Reset Upgrades</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🏆 Achievements</h3>
+                <div class="admin-btn-row">
+                    <button class="btn-admin-action purple" onclick="adminUnlockAllAchievements()">🏆 Unlock All Achievements</button>
+                    <button class="btn-admin-action red" onclick="adminResetAchievements()">↩️ Reset Achievements</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>🍕 Pizza Sales</h3>
+                <div class="admin-btn-row">
+                    <button class="btn-admin-action orange" onclick="adminAdd50Pizzas()">+50 Pizzas Sold</button>
+                    <button class="btn-admin-action red" onclick="adminResetPizzas()">↩️ Reset Sales</button>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h3>💾 Save / Reset</h3>
+                <div class="admin-btn-row">
+                    <button class="btn-admin-action blue" onclick="saveGame()">💾 Save Game</button>
+                    <button class="btn-admin-action red" onclick="adminResetGame()">🗑️ Delete Save</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="adminBack()" style="width: 100%; margin-top: 10px;">← Back</button>
+        </div>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div class="admin-modal-overlay" id="adminModalOverlay">
+        <div class="admin-modal">
+            <h2>🔒 Admin Login</h2>
+            <p style="color:#adb5bd; font-size:13px; margin-bottom:20px;">Enter the admin password to continue.</p>
+            <input type="password" id="adminPasswordInput" placeholder="Password..." onkeydown="if(event.key==='Enter') submitAdminPassword()" />
+            <div class="admin-error" id="adminLoginError"></div>
+            <div class="admin-btn-row">
+                <button class="btn-admin-action blue" onclick="submitAdminPassword()" style="flex:1;">Unlock</button>
+                <button class="btn-admin-action red" onclick="closeAdminLogin()" style="flex:1;">Cancel</button>
             </div>
         </div>
     </div>
@@ -2514,14 +2754,146 @@
 
         // Add keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && gameState.gameRunning) {
-                if (gameState.gamePaused) {
-                    resumeGame();
-                } else {
-                    pauseGame();
+            if (e.key === 'Escape') {
+                if (document.getElementById('adminModalOverlay').classList.contains('active')) {
+                    closeAdminLogin();
+                    return;
+                }
+                if (gameState.gameRunning) {
+                    if (gameState.gamePaused) {
+                        resumeGame();
+                    } else {
+                        pauseGame();
+                    }
                 }
             }
         });
+
+        // ─── Admin Mode ────────────────────────────────────────────────────────
+
+        const ADMIN_PASSWORD = 'los tungtungtungcitos dicen sahur';
+        let adminUnlocked = false;
+        let adminReturnScreen = 'mainMenu';
+
+        function openAdminLogin() {
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminLoginError').textContent = '';
+            document.getElementById('adminModalOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('adminPasswordInput').focus(), 50);
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminModalOverlay').classList.remove('active');
+        }
+
+        function submitAdminPassword() {
+            const input = document.getElementById('adminPasswordInput').value;
+            if (input === ADMIN_PASSWORD) {
+                adminUnlocked = true;
+                closeAdminLogin();
+                adminReturnScreen = gameState.gameRunning ? 'gameScreen' : 'mainMenu';
+                showScreen('adminPanel');
+                showNotification('🔧 Admin mode unlocked!', 'success');
+            } else {
+                document.getElementById('adminLoginError').textContent = '❌ Incorrect password.';
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminPasswordInput').focus();
+            }
+        }
+
+        function adminBack() {
+            showScreen(adminReturnScreen);
+        }
+
+        function adminAddMoney(amount) {
+            gameState.money += amount;
+            gameState.totalEarned += amount;
+            renderGameScreen();
+            showNotification(`💰 Added $${amount.toLocaleString()} to your balance!`, 'success');
+        }
+
+        function adminAddCustomMoney() {
+            const input = document.getElementById('adminCustomAmount');
+            const amount = parseInt(input.value, 10);
+            if (!amount || amount <= 0) {
+                showNotification('Please enter a valid amount.', 'error');
+                return;
+            }
+            adminAddMoney(amount);
+            input.value = '';
+        }
+
+        function adminMaxAllUpgrades() {
+            const maxLevels = { oven: 6, workers: 5, quality: 5, marketing: 5, storage: 4, delivery: 5, recipe: 5, loyalty: 5 };
+            Object.keys(maxLevels).forEach(key => {
+                gameState[key + 'Level'] = maxLevels[key];
+            });
+            gameState.timesUpgraded += Object.keys(maxLevels).length;
+            renderGameScreen();
+            showNotification('⬆️ All upgrades maxed out!', 'success');
+        }
+
+        function adminResetUpgrades() {
+            ['oven', 'workers', 'quality', 'marketing', 'storage', 'delivery', 'recipe', 'loyalty'].forEach(key => {
+                gameState[key + 'Level'] = 1;
+            });
+            renderGameScreen();
+            showNotification('↩️ All upgrades reset to level 1.', 'warning');
+        }
+
+        function adminUnlockAllAchievements() {
+            let totalReward = 0;
+            Object.keys(gameState.achievements).forEach(key => {
+                if (!gameState.achievements[key].unlocked) {
+                    gameState.achievements[key].unlocked = true;
+                    totalReward += gameState.achievements[key].reward;
+                }
+            });
+            gameState.money += totalReward;
+            gameState.totalEarned += totalReward;
+            renderGameScreen();
+            showNotification(`🏆 All achievements unlocked! +$${totalReward} rewards!`, 'success');
+        }
+
+        function adminResetAchievements() {
+            Object.keys(gameState.achievements).forEach(key => {
+                gameState.achievements[key].unlocked = false;
+            });
+            showNotification('↩️ All achievements reset.', 'warning');
+        }
+
+        function adminAdd50Pizzas() {
+            const addCount = 50;
+            gameState.pizzasSold += addCount;
+            gameState.totalPizzasBaked += addCount;
+            const pizzaTypeCount = Object.keys(gameState.pizzaStats).length;
+            const perType = Math.floor(addCount / pizzaTypeCount);
+            Object.keys(gameState.pizzaStats).forEach(key => {
+                gameState.pizzaStats[key] += perType;
+            });
+            renderGameScreen();
+            checkAchievements();
+            showNotification(`🍕 Added ${addCount} pizzas to your sales count!`, 'success');
+        }
+
+        function adminResetPizzas() {
+            gameState.pizzasSold = 0;
+            gameState.totalPizzasBaked = 0;
+            Object.keys(gameState.pizzaStats).forEach(key => {
+                gameState.pizzaStats[key] = 0;
+            });
+            renderGameScreen();
+            showNotification('↩️ Pizza sales reset.', 'warning');
+        }
+
+        function adminResetGame() {
+            if (confirm('Delete save file and reset all game progress? This cannot be undone.')) {
+                localStorage.removeItem('patelsGameSave');
+                showNotification('🗑️ Save file deleted.', 'error');
+            }
+        }
+
+        // ─── End Admin Mode ────────────────────────────────────────────────────
     </script>
 </body>
 </html>
