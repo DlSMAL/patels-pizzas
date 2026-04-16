@@ -1151,6 +1151,82 @@
             letter-spacing: 0.5px;
         }
 
+        /* Combo Streak Banner */
+        .combo-banner {
+            display: none;
+            background: linear-gradient(135deg, #764ba2 0%, #4d96ff 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.45);
+            animation: comboPulse 1s ease-in-out infinite;
+        }
+
+        .combo-banner.active {
+            display: block;
+        }
+
+        @keyframes comboPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+        }
+
+        /* Cutscene Modal */
+        .cutscene-modal {
+            display: none;
+            position: fixed;
+            z-index: 2100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .cutscene-modal.active {
+            display: flex;
+        }
+
+        .cutscene-content {
+            background: linear-gradient(135deg, #1f2b5d 0%, #3f2b63 100%);
+            color: #fff;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 620px;
+            padding: 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            animation: slideUp 0.3s ease;
+        }
+
+        .cutscene-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .cutscene-text {
+            line-height: 1.7;
+            font-size: 16px;
+            margin-bottom: 20px;
+            white-space: pre-line;
+        }
+
+        .cutscene-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         /* Admin Mode */
         .btn-admin {
             background: #343a40;
@@ -1463,6 +1539,8 @@
                     <li>🌟 Bake <strong>Patel's Paneer</strong> to unlock the Paneer topping and earn a special achievement!</li>
                     <li>🔥 <strong>Cooking Frenzy</strong> randomly activates every 45–90 seconds — order quickly for 2× speed!</li>
                     <li>👑 <strong>Mr. Patel's Request</strong> appears every 60–120 seconds — bake his chosen pizza within 45s for double value!</li>
+                    <li>🔥 Build a <strong>Combo Streak</strong> by selling pizzas quickly for stacked multipliers.</li>
+                    <li>🎬 Story <strong>Cutscenes</strong> trigger at key milestones and major events.</li>
                 </ul>
 
                 <h3>🌟 MR. PATEL'S SPECIAL</h3>
@@ -1500,6 +1578,7 @@
 
             <div class="frenzy-banner" id="frenzybanner">🔥 COOKING FRENZY! 2× Speed Active! <span id="frenzyTimer"></span></div>
             <div class="patel-request-banner" id="patelRequestBanner">👑 Mr. Patel requests: <span id="patelRequestPizza"></span> for <strong>DOUBLE VALUE</strong>! ⏰ <span id="patelRequestTimer"></span>s left</div>
+            <div class="combo-banner" id="comboBanner">🔥 COMBO x<span id="comboMultiplier">1.00</span> • <span id="comboCount">0</span> streak • ⏳ <span id="comboTimer">0.0</span>s</div>
 
             <div class="pizza-menu" id="pizzaMenu"></div>
 
@@ -1676,6 +1755,18 @@
         </div>
     </div>
 
+    <!-- Cutscene Modal -->
+    <div class="cutscene-modal" id="cutsceneModal">
+        <div class="cutscene-content">
+            <div class="cutscene-title" id="cutsceneTitle">🎬 Cutscene</div>
+            <div class="cutscene-text" id="cutsceneText"></div>
+            <div class="cutscene-actions">
+                <button class="btn-primary" onclick="closeCutscene()">Continue</button>
+                <button class="btn-secondary" onclick="closeCutscene()">Skip</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Pause Overlay -->
     <div class="pause-overlay" id="pauseOverlay">
         <div class="pause-menu">
@@ -1744,6 +1835,14 @@
             cookingFrenzyNextTime: 0,
             patelRequest: { active: false, pizzaType: null, pizzaName: null, pizzaEmoji: null, endTime: 0 },
             patelRequestNextTime: 0,
+            comboCount: 0,
+            comboMultiplier: 1,
+            comboExpiresAt: 0,
+            comboWindow: 8,
+            cutscenesSeen: {},
+            cutsceneQueue: [],
+            cutsceneActive: false,
+            cutsceneResumeAfter: false,
         };
 
         const pizzas = {
@@ -1823,6 +1922,10 @@
             selectedToppings: [],
         };
 
+        const COMBO_MULTIPLIER_INCREMENT = 0.06;
+        const MAX_COMBO_MULTIPLIER_BONUS = 0.9;
+        const COMBO_BANNER_MIN_STREAK = 2;
+
         // Utility Functions
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1862,12 +1965,25 @@
             gameState.cookingFrenzyNextTime = 45 + Math.random() * 45;
             gameState.patelRequest = { active: false, pizzaType: null, pizzaName: null, pizzaEmoji: null, endTime: 0 };
             gameState.patelRequestNextTime = 60 + Math.random() * 60;
+            gameState.comboCount = 0;
+            gameState.comboMultiplier = 1;
+            gameState.comboExpiresAt = 0;
+            gameState.comboWindow = 8;
+            gameState.cutscenesSeen = {};
+            gameState.cutsceneQueue = [];
+            gameState.cutsceneActive = false;
+            gameState.cutsceneResumeAfter = false;
 
             renderPizzaMenu();
             renderGameScreen();
             showScreen('gameScreen');
             gameLoop();
             setTimeout(() => showNotification("👑 Mr. Patel says: \"Please make my Paneer Special — it's the best pizza in the house!\"", 'info', 5000), 800);
+            setTimeout(() => queueCutscene(
+                'grand_opening',
+                '🎬 Grand Opening Night',
+                `Mr. Patel: "Welcome to Patel's Pizzas!"\n\nKeep the oven busy, build combos, and make this place legendary.`
+            ), 6200);
         }
 
         function saveGame() {
@@ -1894,6 +2010,20 @@
                 if (!gameState.patelRequestNextTime) {
                     gameState.patelRequestNextTime = gameState.currentTime + 60 + Math.random() * 60;
                 }
+                if (!gameState.comboWindow) {
+                    gameState.comboCount = 0;
+                    gameState.comboMultiplier = 1;
+                    gameState.comboExpiresAt = 0;
+                    gameState.comboWindow = 8;
+                }
+                if (!gameState.cutscenesSeen) {
+                    gameState.cutscenesSeen = {};
+                }
+                if (!gameState.cutsceneQueue) {
+                    gameState.cutsceneQueue = [];
+                }
+                gameState.cutsceneActive = false;
+                gameState.cutsceneResumeAfter = false;
                 renderPizzaMenu();
                 renderGameScreen();
                 showScreen('gameScreen');
@@ -1994,7 +2124,8 @@
                     renderPizzaMenu();
                 }
 
-                const total = (earnings + bonus + deliveryBonus) * (doubled ? 2 : 1) * (patelDoubled ? 2 : 1);
+                const comboMult = updateComboOnSale();
+                const total = Math.floor((earnings + bonus + deliveryBonus) * (doubled ? 2 : 1) * (patelDoubled ? 2 : 1) * comboMult);
 
                 gameState.money += total;
                 gameState.totalEarned += total;
@@ -2006,9 +2137,11 @@
                 if (deliveryBonus > 0) msg += ` incl. $${deliveryBonus} delivery`;
                 if (doubled) msg += ' 🎁 DOUBLED!';
                 if (patelDoubled) msg += ' 👑 PATEL\'S REQUEST!';
+                if (comboMult > 1) msg += ` 🔥 COMBO x${comboMult.toFixed(2)}!`;
                 msg += ')';
                 showNotification(msg, patelDoubled ? 'warning' : 'success');
                 checkAchievements();
+                checkMilestoneCutscenes();
             });
         }
 
@@ -2118,6 +2251,100 @@
             setTimeout(() => notification.remove(), duration);
         }
 
+        function updateComboOnSale() {
+            if (gameState.currentTime <= gameState.comboExpiresAt) {
+                gameState.comboCount++;
+            } else {
+                gameState.comboCount = 1;
+            }
+            gameState.comboExpiresAt = gameState.currentTime + gameState.comboWindow;
+            gameState.comboMultiplier = 1 + Math.min(MAX_COMBO_MULTIPLIER_BONUS, gameState.comboCount * COMBO_MULTIPLIER_INCREMENT);
+            if (gameState.comboCount === 4) {
+                showNotification('🔥 HOT STREAK! Keep selling for bigger combo payouts!', 'warning', 3000);
+            }
+            return gameState.comboMultiplier;
+        }
+
+        function decayComboIfNeeded() {
+            if (gameState.comboCount > 0 && gameState.currentTime > gameState.comboExpiresAt) {
+                gameState.comboCount = 0;
+                gameState.comboMultiplier = 1;
+                gameState.comboExpiresAt = 0;
+            }
+        }
+
+        function queueCutscene(id, title, text) {
+            if (gameState.cutscenesSeen[id]) return;
+            gameState.cutscenesSeen[id] = true;
+            gameState.cutsceneQueue.push({ id, title, text });
+            if (!gameState.cutsceneActive) {
+                playNextCutscene();
+            }
+        }
+
+        function playNextCutscene() {
+            if (gameState.cutsceneActive || gameState.cutsceneQueue.length === 0) return;
+            const next = gameState.cutsceneQueue.shift();
+            gameState.cutsceneActive = true;
+            gameState.cutsceneResumeAfter = !gameState.gamePaused;
+            gameState.gamePaused = true;
+            document.getElementById('cutsceneTitle').textContent = next.title;
+            document.getElementById('cutsceneText').textContent = next.text;
+            document.getElementById('cutsceneModal').classList.add('active');
+        }
+
+        function closeCutscene() {
+            document.getElementById('cutsceneModal').classList.remove('active');
+            gameState.cutsceneActive = false;
+            if (gameState.cutsceneResumeAfter) {
+                gameState.gamePaused = false;
+            }
+            gameState.cutsceneResumeAfter = false;
+            if (gameState.cutsceneQueue.length > 0) {
+                setTimeout(playNextCutscene, 250);
+            }
+        }
+
+        function checkMilestoneCutscenes() {
+            const seen = gameState.cutscenesSeen || {};
+
+            if (!seen.first_sale && gameState.pizzasSold >= 1) {
+                queueCutscene(
+                    'first_sale',
+                    '🎬 First Customer Served',
+                    `Your first pizza is sold!\n\nThe neighborhood just got a taste of Patel's Pizzas.`
+                );
+            }
+            if (!seen.local_favorite && gameState.pizzasSold >= 25) {
+                queueCutscene(
+                    'local_favorite',
+                    '🎬 Local Favorite',
+                    `Word is spreading fast.\n\nPeople are lining up for your slices every evening!`
+                );
+            }
+            if (!seen.city_hype && gameState.pizzasSold >= 100) {
+                queueCutscene(
+                    'city_hype',
+                    '🎬 Citywide Hype',
+                    `You hit 100 pizzas sold!\n\nYour shop is becoming the hottest food spot in town.`
+                );
+            }
+            if (!seen.custom_creator && gameState.customPizzasMade >= 1) {
+                queueCutscene(
+                    'custom_creator',
+                    '🎬 Signature Chef Moment',
+                    `Your first custom pizza is a hit.\n\nCustomers now ask for "the chef special."`
+                );
+            }
+            if (!seen.combo_master && gameState.comboCount >= 6) {
+                queueCutscene(
+                    'combo_master',
+                    '🎬 Combo Mastery',
+                    `You chained a 6+ streak!\n\nKeep momentum high to cash in bigger combo multipliers.`
+                );
+            }
+        }
+
         function pauseGame() {
             gameState.gamePaused = true;
             document.getElementById('pauseOverlay').classList.add('active');
@@ -2209,6 +2436,18 @@
                 document.getElementById('patelRequestTimer').textContent = patelLeft.toFixed(0);
             } else {
                 patelBanner.classList.remove('active');
+            }
+
+            // Combo banner
+            const comboBanner = document.getElementById('comboBanner');
+            // Show from streak 2+ to reduce UI noise when only baseline combo is active.
+            if (gameState.comboCount >= COMBO_BANNER_MIN_STREAK && gameState.currentTime <= gameState.comboExpiresAt) {
+                comboBanner.classList.add('active');
+                document.getElementById('comboMultiplier').textContent = gameState.comboMultiplier.toFixed(2);
+                document.getElementById('comboCount').textContent = gameState.comboCount;
+                document.getElementById('comboTimer').textContent = Math.max(0, gameState.comboExpiresAt - gameState.currentTime).toFixed(1);
+            } else {
+                comboBanner.classList.remove('active');
             }
 
             // Oven Display
@@ -2428,6 +2667,7 @@
             if (!gameState.gamePaused) {
                 gameState.currentTime += 0.016; // ~60 FPS
                 checkDonePizzas();
+                decayComboIfNeeded();
 
                 // ── Cooking Frenzy ──────────────────────────────────────────────
                 if (!gameState.cookingFrenzy && gameState.cookingFrenzyNextTime > 0 && gameState.currentTime >= gameState.cookingFrenzyNextTime) {
@@ -2435,6 +2675,11 @@
                     gameState.cookingFrenzyEndTime = gameState.currentTime + 15;
                     gameState.cookingFrenzyNextTime = gameState.cookingFrenzyEndTime + 45 + Math.random() * 45;
                     showNotification('🔥 COOKING FRENZY! 2× cooking speed for 15 seconds!', 'success', 4000);
+                    queueCutscene(
+                        'frenzy_intro',
+                        '🎬 Kitchen Frenzy!',
+                        `The kitchen is on fire (in a good way)!\n\nFor 15 seconds, your oven runs at double speed.`
+                    );
                     renderPizzaMenu();
                 }
                 if (gameState.cookingFrenzy && gameState.currentTime >= gameState.cookingFrenzyEndTime) {
@@ -2457,6 +2702,11 @@
                         };
                         gameState.patelRequestNextTime = gameState.patelRequest.endTime + 60 + Math.random() * 60;
                         showNotification(`👑 Mr. Patel requests: ${pizzas[chosen].emoji} ${pizzas[chosen].name}! Sell it for DOUBLE value! (45s)`, 'warning', 6000);
+                        queueCutscene(
+                            'patel_request_intro',
+                            '🎬 Urgent VIP Order',
+                            `Mr. Patel personally requested a pizza.\n\nFulfill it in time for double value rewards!`
+                        );
                         renderPizzaMenu();
                     }
                 }
@@ -2755,6 +3005,10 @@
         // Add keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
+                if (document.getElementById('cutsceneModal').classList.contains('active')) {
+                    closeCutscene();
+                    return;
+                }
                 if (document.getElementById('adminModalOverlay').classList.contains('active')) {
                     closeAdminLogin();
                     return;
