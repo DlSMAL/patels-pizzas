@@ -1540,7 +1540,7 @@
                     <li>🔥 <strong>Cooking Frenzy</strong> randomly activates every 45–90 seconds — order quickly for 2× speed!</li>
                     <li>👑 <strong>Mr. Patel's Request</strong> appears every 60–120 seconds — bake his chosen pizza within 45s for double value!</li>
                     <li>🔥 Build a <strong>Combo Streak</strong> by selling pizzas quickly for stacked multipliers.</li>
-                    <li>🎬 story <strong>Cutscenes</strong> trigger at key milestones and major events.</li>
+                    <li>🎬 Story <strong>Cutscenes</strong> trigger at key milestones and major events.</li>
                 </ul>
 
                 <h3>🌟 MR. PATEL'S SPECIAL</h3>
@@ -1923,6 +1923,8 @@
         };
 
         const COMBO_MULTIPLIER_INCREMENT = 0.06;
+        const MAX_COMBO_MULTIPLIER_BONUS = 0.9;
+        const COMBO_BANNER_MIN_STREAK = 2;
 
         // Utility Functions
         function showScreen(screenId) {
@@ -2256,7 +2258,7 @@
                 gameState.comboCount = 1;
             }
             gameState.comboExpiresAt = gameState.currentTime + gameState.comboWindow;
-            gameState.comboMultiplier = 1 + Math.min(0.9, gameState.comboCount * COMBO_MULTIPLIER_INCREMENT);
+            gameState.comboMultiplier = 1 + Math.min(MAX_COMBO_MULTIPLIER_BONUS, gameState.comboCount * COMBO_MULTIPLIER_INCREMENT);
             if (gameState.comboCount === 4) {
                 showNotification('🔥 HOT STREAK! Keep selling for bigger combo payouts!', 'warning', 3000);
             }
@@ -2314,7 +2316,7 @@
             if (gameState.pizzasSold >= 25) {
                 queueCutscene(
                     'local_favorite',
-                    '🎬 Local Favourite',
+                    '🎬 Local Favorite',
                     `Word is spreading fast.\n\nPeople are lining up for your slices every evening!`
                 );
             }
@@ -2437,7 +2439,7 @@
             // Combo banner
             const comboBanner = document.getElementById('comboBanner');
             // Show from streak 2+ to reduce UI noise when only baseline combo is active.
-            if (gameState.comboCount > 1 && gameState.currentTime <= gameState.comboExpiresAt) {
+            if (gameState.comboCount >= COMBO_BANNER_MIN_STREAK && gameState.currentTime <= gameState.comboExpiresAt) {
                 comboBanner.classList.add('active');
                 document.getElementById('comboMultiplier').textContent = gameState.comboMultiplier.toFixed(2);
                 document.getElementById('comboCount').textContent = gameState.comboCount;
