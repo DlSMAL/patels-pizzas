@@ -1983,7 +1983,7 @@
                 'grand_opening',
                 '🎬 Grand Opening Night',
                 `Mr. Patel: "Welcome to Patel's Pizzas!"\n\nKeep the oven busy, build combos, and make this place legendary.`
-            ), 900);
+            ), 6200);
         }
 
         function saveGame() {
@@ -2306,35 +2306,37 @@
         }
 
         function checkMilestoneCutscenes() {
-            if (gameState.pizzasSold >= 1) {
+            const seen = gameState.cutscenesSeen || {};
+
+            if (!seen.first_sale && gameState.pizzasSold >= 1) {
                 queueCutscene(
                     'first_sale',
                     '🎬 First Customer Served',
                     `Your first pizza is sold!\n\nThe neighborhood just got a taste of Patel's Pizzas.`
                 );
             }
-            if (gameState.pizzasSold >= 25) {
+            if (!seen.local_favorite && gameState.pizzasSold >= 25) {
                 queueCutscene(
                     'local_favorite',
                     '🎬 Local Favorite',
                     `Word is spreading fast.\n\nPeople are lining up for your slices every evening!`
                 );
             }
-            if (gameState.pizzasSold >= 100) {
+            if (!seen.city_hype && gameState.pizzasSold >= 100) {
                 queueCutscene(
                     'city_hype',
                     '🎬 Citywide Hype',
                     `You hit 100 pizzas sold!\n\nYour shop is becoming the hottest food spot in town.`
                 );
             }
-            if (gameState.customPizzasMade >= 1) {
+            if (!seen.custom_creator && gameState.customPizzasMade >= 1) {
                 queueCutscene(
                     'custom_creator',
                     '🎬 Signature Chef Moment',
                     `Your first custom pizza is a hit.\n\nCustomers now ask for "the chef special."`
                 );
             }
-            if (gameState.comboCount >= 6) {
+            if (!seen.combo_master && gameState.comboCount >= 6) {
                 queueCutscene(
                     'combo_master',
                     '🎬 Combo Mastery',
