@@ -50,5 +50,5 @@ Just open `index.html` in any modern browser — no installation required.
 
 ## Credits
 
-Rizwan Waseem × Ali Imran  
+dlsmal X Ali Imran
 © 2026 All Rights Reserved
